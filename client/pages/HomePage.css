@@ -1,0 +1,37 @@
+#HomePage-Main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: start;
+    min-height: 100vh;
+    width: 100vw;
+    padding: 5rem;
+}
+
+#Intro {
+
+    display: flex;
+    flex-direction: column;
+   
+    
+
+
+}
+
+#App-Name {
+    font-size: 6rem;
+    font-weight: bolder;
+    color: whitesmoke;
+}
+
+#Description {
+    font-size: 2rem;
+    font-weight: bolder;
+    color: whitesmoke;
+    text-align: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
