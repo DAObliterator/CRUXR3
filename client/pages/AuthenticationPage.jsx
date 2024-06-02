@@ -44,11 +44,12 @@ const LoginComponent = () => {
             backgroundColor: "red",
           }}
         >
+         
           <a
             href={
               import.meta.env.VITE_ENV === "development"
-                ? import.meta.env.VITE_API_DEV
-                : import.meta.env.VITE_API_PROD + "/google"
+                ? import.meta.env.VITE_API_DEV + "/auth/google"
+                : import.meta.env.VITE_API_PROD + "/auth/google"
             }
           >
             Sign In With Google

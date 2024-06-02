@@ -2,22 +2,35 @@ import express from "express";
 import dotenv from "dotenv";
 import session from "express-session";
 import cors from "cors";
-import mongoose, { Collection } from "mongoose";
+import mongoose from "mongoose";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { authRouter } from "./routes/authRouter.js";
 import MongoStore from "connect-mongo";
-dotenv.config({ path:"./config.env"});
+//import "./utils/passport.js"
+dotenv.config({ path: "./config.env" });
 const app = express();
 
+app.use(express.json());
+
+//DATABASE CONNECTION
+const DB = process.env.DB_STRING.replace("<password>", process.env.DB_PASSWORD);
+mongoose
+  .connect(DB)
+  .then(() => {
+    console.log("DATABASE CONNECTION WAS SUCCESSFULL!");
+  })
+  .catch((error) => {
+    console.log(`${error} --- error connecting to DATABASE `);
+  });
 
 app.use(
   cors({
-    origin: (process.env.NODE_ENV === "development"
-      ? process.env.CLIENT_URL_DEV
-      : process.env.CLIENT_URL_PROD),
+    origin:
+      process.env.NODE_ENV === "development"
+        ? process.env.CLIENT_URL_DEV
+        : process.env.CLIENT_URL_PROD,
     credentials: true,
-    methods: "GET,POST,PUT,DELETE"
+    methods: "GET,POST,PUT,DELETE",
   })
 );
 
@@ -28,51 +41,81 @@ app.use(
     secret: process.env.SECRET,
     store: MongoStore.create({
       mongoUrl: DB,
-      collectionName: "sessions"
+      collectionName: "sessions",
     }),
   })
 );
 
 
-//DATABASE CONNECTION
-const DB = process.env.DB_STRING.replace(
-  "<password>",
-  process.env.DB_PASSWORD
+
+
+
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: `${
+        process.env.NODE_ENV === "development"
+          ? process.env.API_URL_DEV
+          : process.env.API_URL_PROD
+      }`,
+    },
+
+    async (accessToken, refreshToken, profile, done) => {
+      console.log(profile, " profile info \n");
+
+      return done(null, profile);
+    }
+  )
 );
-mongoose.connect(DB).then(() => {
-  console.log("DATABASE CONNECTION WAS SUCCESSFULL!")
-}).catch((error) => {
-  console.log(`${error} --- error connecting to DATABASE `)
-})
 
-/*passport.use(new GoogleStrategy (
-  {
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.NODE_ENV === "development" ? process.env.API_URL_DEV : process.env.API_URL_PROD }`
-  },
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
 
-  async (accessToken , refreshToken , profile , done ) => {
-    //You can use the profile information to create or authenticate the user in your data base 
-    
-    return done(null , profile);
+passport.deserializeUser(function (user, done) {
+  done(null, user);
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+
+app.use(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["email", "profile"] })
+);
+
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    access_type: "offline",
+    scope: ["email", "profile"],
+  }),
+  (req, res) => {
+    if (!req.user) {
+      res.status(400).json({ error: "Authentication failed" });
+    } else {
+      res.redirect(
+        process.env.NODE_ENV === "development"
+          ? process.env.CLIENT_URL_DEV
+          : process.env.CLIENT_URL_PROD
+      );
+    }
+    // return user details
   }
-))
+);
 
-passport.serializeUser();
-
-passport.deserializeUser();*/
-
-
-app.use("/auth" , authRouter);
-
-app.get("/" , (req,res) => {
-    console.log("get req received to / endpoint \n");
-    res.send("<h1>Hello</h1>");
-})
+app.get("/", (req, res) => {
+  console.log("get req received to / endpoint \n");
+  res.send("<h1>Hello</h1>");
+});
 
 const PORT = process.env.PORT || 6007;
 
-app.listen( PORT , () => {
-    console.log(`server listening on port ${PORT} \n`)
-} )
+app.listen(PORT, () => {
+  console.log(`server listening on port ${PORT} \n`);
+});
