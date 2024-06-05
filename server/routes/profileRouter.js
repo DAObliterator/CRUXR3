@@ -6,6 +6,8 @@ const router = express.Router();
 router.get("/getUserDetails", (req, res) => {
   console.log(`you have hit /getUserDetails endpoint \n`);
 
+  console.log( req.isAuthenticated() , "req.isAuthenticated in /getUserDetails endpoint \n");
+
   if (req.isAuthenticated()) {
     console.log(`req.user --- ${JSON.stringify(req.user)} in /getUserDetails`);
 
