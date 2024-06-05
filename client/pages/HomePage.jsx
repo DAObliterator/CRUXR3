@@ -1,12 +1,17 @@
-import React, { useEffect } from "react";
+import React, { useEffect , useState } from "react";
 import "./HomePage.css";
 import { FaBeer, FaThLarge } from "react-icons/fa";
 import { IconContext } from "react-icons/lib";
 import { FaPodcast } from "react-icons/fa";
+import { useDispatch } from "react-redux";
 import { FaArrowAltCircleRight } from "react-icons/fa";
 import axios from "axios";
+import { setUserDetails } from "../src/features/users/userSlice";
 
 export const HomePage = () => {
+  const dispatch = useDispatch();
+  const [user, setUser] = useState({});
+
   useEffect(() => {
     axios
       .get(
@@ -20,9 +25,18 @@ export const HomePage = () => {
       .then((response) => {
         console.log(`${JSON.stringify(response.data)} --- response \n`);
 
-        window.sessionStorage.setItem("name", response.data.name);
-        window.sessionStorage.setItem("email", response.data.email);
-        window.sessionStorage.setItem("profilePic", response.data.profilePic);
+        setUser(response.data);
+
+        if (
+          !window.sessionStorage.getItem("name") &&
+          !window.sessionStorage.getItem("email") &&
+          !window.sessionStorage.getItem("profilePic")
+        ) {
+          window.sessionStorage.setItem("name", response.data.name);
+          window.sessionStorage.setItem("email", response.data.email);
+          window.sessionStorage.setItem("profilePic", response.data.profilePic);
+
+        }
       })
       .catch((error) => {
         console.log(
@@ -30,6 +44,8 @@ export const HomePage = () => {
         );
       });
   }, []);
+
+  dispatch(setUserDetails(user));
 
   return (
     <div id="HomePage-Main">
@@ -47,15 +63,38 @@ export const HomePage = () => {
         </p>
       </div>
       <div id="Login-Continue">
-        <strong>
-          {" "}
-          <a href="/authenticate">LOGIN/SIGN UP</a>
-        </strong>{" "}
-        <p> to Continue </p>
-        <FaArrowAltCircleRight
-          style={{ color: "whitesmoke", fontSize: "4rem", marginLeft: "1rem" }}
-        ></FaArrowAltCircleRight>
+        {Object.keys(user).length === 0 ? (
+          <div>
+            {" "}
+            <strong>
+              {" "}
+              <a href="/authenticate">LOGIN/SIGN UP</a>
+            </strong>{" "}
+            <p> to Continue </p>
+            <FaArrowAltCircleRight
+              style={{
+                color: "whitesmoke",
+                fontSize: "4rem",
+                marginLeft: "1rem",
+              }}
+            ></FaArrowAltCircleRight>{" "}
+          </div>
+        ) : (
+          <p href="/profile">
+            {" "}
+            Hello {window.sessionStorage.getItem("name")} Finish Setting up Your{" "}
+            <a
+              href={`profile/${
+                window.sessionStorage.getItem("name")
+              }`}
+            >
+              Profile
+            </a>{" "}
+          </p>
+        )}
       </div>
     </div>
   );
 };
+
+

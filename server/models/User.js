@@ -6,10 +6,19 @@ const UserSchema = Schema({
         type: String
      },
      profilePhoto: {
-        type: String
+        type: String//schema options / Field options
      },
      name: {
         type: String
+     },
+     username: {
+      type: String,
+      default: ""
+
+     },
+     bio: {
+      type: String,
+      default: ""
      }
 } ,{ timestamps: true})
 

@@ -75,6 +75,7 @@ passport.use(
           profilePhoto: profile.photos[0].value
         });
 
+
       }
 
       return done(null, profile);
@@ -99,14 +100,15 @@ app.get(
     access_type: "offline",
     scope: ["email", "profile"],
   }),
-  (req, res) => {
+  async (req, res) => {
     console.log(`/auth/google/callback hit with a req --- ${JSON.stringify(req.user)} \n`)
     if (!req.user) {
       res.status(400).json({ error: "Authentication failed" });
     } else {
+     
       res.redirect(
         process.env.NODE_ENV === "development"
-          ? process.env.CLIENT_URL_DEV
+          ? process.env.CLIENT_URL_DEV 
           : process.env.CLIENT_URL_PROD
       );
     }
