@@ -7,7 +7,7 @@ router.get("/getUserDetails", (req, res) => {
   console.log(`you have hit /getUserDetails endpoint \n`);
 
   if (req.isAuthenticated()) {
-    console.log(`req.user --- ${JSON.stringify(req.user)}`);
+    console.log(`req.user --- ${JSON.stringify(req.user)} in /getUserDetails`);
 
     res
       .status(200)
@@ -27,7 +27,9 @@ router.get("/profileStatus", async (req, res) => {
   console.log(`you have hit /profileStatus endpoint \n`);
 
   if (req.isAuthenticated()) {
-    console.log(`req.user (pS) --- ${JSON.stringify(req.user)}`);
+    console.log(
+      `req.user (pS) --- ${JSON.stringify(req.user)} in /profileStatus`
+    );
 
     const currentUser = await User.findOne({
       name: req.user.displayName
@@ -65,7 +67,9 @@ router.post("/completeProfile" , async (req,res) => {
 
   if ( req.isAuthenticated()) {
 
-    console.log(`req.user (cP) --- ${JSON.stringify(req.user)}`);
+    console.log(
+      `req.user (cP) --- ${JSON.stringify(req.user)} in /completeProfile`
+    );
 
     const currentUser = await User.findOne({
       name: req.user.displayName,
