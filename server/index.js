@@ -41,6 +41,13 @@ app.use(
     resave: false, //changes req,session.cookie when session object is modified
     saveUninitialized: false, //only stores session to session store if modified
     secret: process.env.SECRET,
+    cookie: {
+      path: "/",
+      secure: process.env.NODE_ENV === "development" ? false : true,
+      httpOnly: process.env.NODE_ENV === "development" ? true : false,
+      maxAge: 10*60*1000,
+      sameSite: "none"
+    },
     store: MongoStore.create({
       mongoUrl: DB,
       collectionName: "sessions",
