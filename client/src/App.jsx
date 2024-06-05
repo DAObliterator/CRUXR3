@@ -17,7 +17,7 @@ function App() {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (window.sessionStorage.getItem("user") !== "") {
+    if (window.sessionStorage.getItem("name")) {
       console.log("Authenticated in App.jsx component");
       setAuthenticated(true);
     } else {
