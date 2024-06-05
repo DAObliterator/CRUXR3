@@ -48,8 +48,8 @@ const LoginComponent = () => {
           <a
             href={
               import.meta.env.VITE_ENV === "development"
-                ? import.meta.env.VITE_API_DEV + "/auth/google/callback"
-                : import.meta.env.VITE_API_PROD + "/auth/google/callback"
+                ? import.meta.env.VITE_API_DEV + "/auth/google"
+                : import.meta.env.VITE_API_PROD + "/auth/google"
             }
           >
             Sign In With Google

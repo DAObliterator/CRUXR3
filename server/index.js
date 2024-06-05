@@ -97,24 +97,27 @@ passport.serializeUser(function (user, done) {
 passport.deserializeUser(function (user, done) {
   done(null, user);
 });
-
-
+app.get("/auth/google", passport.authenticate("google", { scope: ["email","profile"] }));
 
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    access_type: "offline",
-    scope: ["email", "profile"],
+    failureRedirect:
+      process.env.NODE_ENV === "development"
+        ? process.env.CLIENT_URL_DEV + "/authenticate"
+        : process.env.CLIENT_URL_PROD + "/authenticate",
   }),
+
   async (req, res) => {
-    console.log(`/auth/google/callback hit with a req --- ${JSON.stringify(req.user)} \n`)
+    console.log(
+      `/auth/google/callback hit with a req --- ${JSON.stringify(req.user)} \n`
+    );
     if (!req.user) {
       res.status(400).json({ error: "Authentication failed" });
     } else {
-     
       res.redirect(
         process.env.NODE_ENV === "development"
-          ? process.env.CLIENT_URL_DEV 
+          ? process.env.CLIENT_URL_DEV
           : process.env.CLIENT_URL_PROD
       );
     }
