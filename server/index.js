@@ -48,6 +48,9 @@ app.use(
   })
 );
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 passport.use(
   new GoogleStrategy(
     {
@@ -91,8 +94,7 @@ passport.deserializeUser(function (user, done) {
   done(null, user);
 });
 
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 app.get(
   "/auth/google/callback",
