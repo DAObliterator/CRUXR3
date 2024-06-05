@@ -38,8 +38,8 @@ app.use(
 
 app.use(
   session({
-    resave: false, //changes req,session.cookie when session object is modified
-    saveUninitialized: false, //only stores session to session store if modified
+    resave: true, //changes req,session.cookie when session object is modified
+    saveUninitialized: true, //only stores session to session store if modified
     secret: process.env.SECRET,
     cookie: {
       path: "/",
