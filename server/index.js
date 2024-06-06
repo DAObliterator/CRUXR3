@@ -95,7 +95,7 @@ passport.deserializeUser(function (user, done) {
   done(null, user);
 });
 
-app.post(
+app.get(
   "/auth/google",
   passport.authenticate("google", {
     scope: ["email", "profile"],

@@ -14,7 +14,7 @@ export const AuthenticationPage = () => {
 const LoginComponent = () => {
   const handleSubmit = async (ev) => {
     ev.preventDefault();
-    axios.post(
+    axios.get(
       `${
         import.meta.env.VITE_ENV === "development"
           ? import.meta.env.VITE_API_DEV 
