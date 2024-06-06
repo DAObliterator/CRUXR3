@@ -33,6 +33,7 @@ app.use(
         : process.env.CLIENT_URL_PROD,
     credentials: true,
     methods: "GET,POST,PUT,DELETE",
+    
   })
 );
 
@@ -94,14 +95,22 @@ passport.deserializeUser(function (user, done) {
   done(null, user);
 });
 
-app.get("/auth/google", (req, res) => {
-  console.log(` /auth/google hit with get req `);
-});
+app.post(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["email", "profile"],
+  })
+);
 
+
+//so this is where i am making the mistake ?
 app.post(
   "/auth/google/callback",
   passport.authenticate("google", {
-    scope: ["email", "profile"],
+    failureRedirect:
+      process.env.NODE_ENV === "development"
+        ? process.env.CLIENT_URL_DEV  
+        : process.env.CLIENT_URL_PROD ,
   }),
   (req, res) => {
     console.log(
@@ -112,8 +121,8 @@ app.post(
     } else {
       res.redirect(
         process.env.NODE_ENV === "development"
-          ? process.env.CLIENT_URL_DEV
-          : process.env.CLIENT_URL_PROD
+          ? process.env.CLIENT_URL_DEV + `/profile/${req.user.displayName}`
+          : process.env.CLIENT_URL_PROD + `/profile/${req.user.displayName}`
       );
     }
     // return user details
