@@ -39,6 +39,7 @@ const LoginComponent = () => {
             alignItems: "center",
             backgroundColor: "red",
           }}
+          type="submit"
         >
           Sign In With Google
           <FaGoogle
