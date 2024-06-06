@@ -67,7 +67,7 @@ const CompleteProfile = ({ username_, setUsername_, bio, setBio }) => {
   const [alertMessage, setAlertMessage] = useState("");
 
   const handleSubmit = async (ev) => {
-    ev.preventDefadivt();
+    ev.preventDefault();
 
     if (username_ !== "" && bio !== "") {
       const response = await axios.post(
