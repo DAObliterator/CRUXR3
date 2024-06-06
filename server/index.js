@@ -99,7 +99,7 @@ app.get("/auth/google" , (req ,res) => {
   console.log(` /auth/google hit with get req `)
 })
 
-app.get(
+app.post(
   "/auth/google/callback",
   passport.authenticate("google", {
     scope: ["email", "profile"],

@@ -1,34 +1,28 @@
-import React from 'react';
+import React from "react";
 import "./AuthenticationPage.css";
-import { FaGoogle } from 'react-icons/fa';
+import { FaGoogle } from "react-icons/fa";
 import axios from "axios";
 
 export const AuthenticationPage = () => {
-  
   return (
-    <div id="Authentication-Main" >
-        <LoginComponent></LoginComponent>
+    <div id="Authentication-Main">
+      <LoginComponent></LoginComponent>
     </div>
-  )
-}
-
+  );
+};
 
 const LoginComponent = () => {
-
-
   const handleSubmit = async (ev) => {
-
-    const response = await axios.get(
+    const response = await axios.post(
       `${
         import.meta.env.VITE_ENV === "development"
           ? import.meta.env.VITE_API_DEV
           : import.meta.env.VITE_API_PROD
-      }/google`, { withCredentials: true } 
+      }/google/auth/callback`,
+      { withCredentials: true }
     );
+  };
 
-    
-
-  }
 
   return (
     <div id="Login-Main">
@@ -44,16 +38,7 @@ const LoginComponent = () => {
             backgroundColor: "red",
           }}
         >
-         
-          <a
-            href={
-              import.meta.env.VITE_ENV === "development"
-                ? import.meta.env.VITE_API_DEV + "/auth/google/callback"
-                : import.meta.env.VITE_API_PROD + "/auth/google/callback"
-            }
-          >
-            Sign In With Google
-          </a>{" "}
+          Sign In With Google
           <FaGoogle
             style={{
               fontSize: "1.5rem",
@@ -66,7 +51,4 @@ const LoginComponent = () => {
       </form>
     </div>
   );
-
-
-
-}
+};
