@@ -14,15 +14,19 @@ export const AuthenticationPage = () => {
 const LoginComponent = () => {
   const handleSubmit = async (ev) => {
     ev.preventDefault();
-    const response = await axios.post(
+    axios.post(
       `${
         import.meta.env.VITE_ENV === "development"
           ? import.meta.env.VITE_API_DEV 
           : import.meta.env.VITE_API_PROD 
       }/auth/google/callback`,
       { withCredentials: true }
-    );
-    console.log(response.data , ` response.data from /google/auth/callback \n`)
+    ).then((response) => {
+      console.log(response.data , "response.data from the /auth/google/callback endpoint")
+    }).catch((error) => {
+      console.log(`${error} --- error happened while sending post req to /auth/google/callback endpoint `)
+    })
+    
   };
 
 

@@ -70,15 +70,14 @@ passport.use(
       console.log(profile, " profile info \n");
       const userExists = await User.findOne({
         email: profile.emails[0].value,
-        name: profile.displayName
-      })
+        name: profile.displayName,
+      });
 
       if (!userExists) {
-
         await User.create({
           email: profile.emails[0].value,
           name: profile.displayName,
-          profilePhoto: profile.photos[0].value
+          profilePhoto: profile.photos[0].value,
         });
       }
 
@@ -95,24 +94,25 @@ passport.deserializeUser(function (user, done) {
   done(null, user);
 });
 
-app.get("/auth/google" , (req ,res) => {
-  console.log(` /auth/google hit with get req `)
-})
+app.get("/auth/google", (req, res) => {
+  console.log(` /auth/google hit with get req `);
+});
 
 app.post(
   "/auth/google/callback",
   passport.authenticate("google", {
     scope: ["email", "profile"],
   }),
-  async (req, res) => {
-    console.log(`/auth/google/callback hit with a req --- ${JSON.stringify(req.user)} \n`)
+  (req, res) => {
+    console.log(
+      `/auth/google/callback hit with a req --- ${JSON.stringify(req.user)} \n`
+    );
     if (!req.user) {
       res.status(400).json({ error: "Authentication failed" });
     } else {
-     
       res.redirect(
         process.env.NODE_ENV === "development"
-          ? process.env.CLIENT_URL_DEV 
+          ? process.env.CLIENT_URL_DEV
           : process.env.CLIENT_URL_PROD
       );
     }
@@ -120,7 +120,7 @@ app.post(
   }
 );
 
-app.use("/profile", profileRouter)
+app.use("/profile", profileRouter);
 
 app.get("/", (req, res) => {
   console.log("get req received to / endpoint \n");
