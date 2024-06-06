@@ -17,11 +17,12 @@ const LoginComponent = () => {
     const response = await axios.post(
       `${
         import.meta.env.VITE_ENV === "development"
-          ? import.meta.env.VITE_API_DEV
-          : import.meta.env.VITE_API_PROD
+          ? import.meta.env.VITE_API_DEV + "/auth/google/callback"
+          : import.meta.env.VITE_API_PROD + "/auth/google/callback"
       }/google/auth/callback`,
       { withCredentials: true }
     );
+    console.log(response.data , ` response.data from /google/auth/callback \n`)
   };
 
 
