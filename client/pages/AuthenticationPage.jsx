@@ -19,7 +19,7 @@ const LoginComponent = () => {
         import.meta.env.VITE_ENV === "development"
           ? import.meta.env.VITE_API_DEV 
           : import.meta.env.VITE_API_PROD 
-      }/google/auth/callback`,
+      }/auth/google/callback`,
       { withCredentials: true }
     );
     console.log(response.data , ` response.data from /google/auth/callback \n`)
