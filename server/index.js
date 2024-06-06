@@ -47,7 +47,6 @@ app.use(
     }),
     cookie: {
       maxAge: 1000 * 60 * 60,
-      secure: process.env.NODE_ENV === "development" ? false : true
     },
   })
 );
@@ -81,8 +80,6 @@ passport.use(
           name: profile.displayName,
           profilePhoto: profile.photos[0].value
         });
-
-
       }
 
       return done(null, profile);
@@ -97,27 +94,25 @@ passport.serializeUser(function (user, done) {
 passport.deserializeUser(function (user, done) {
   done(null, user);
 });
-app.get("/auth/google", passport.authenticate("google", { scope: ["email","profile"] }));
+
+app.get("/auth/google" , (req ,res) => {
+  console.log(` /auth/google hit with get req `)
+})
 
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    failureRedirect:
-      process.env.NODE_ENV === "development"
-        ? process.env.CLIENT_URL_DEV + "/authenticate"
-        : process.env.CLIENT_URL_PROD + "/authenticate",
+    scope: ["email", "profile"],
   }),
-
   async (req, res) => {
-    console.log(
-      `/auth/google/callback hit with a req --- ${JSON.stringify(req.user)} \n`
-    );
+    console.log(`/auth/google/callback hit with a req --- ${JSON.stringify(req.user)} \n`)
     if (!req.user) {
       res.status(400).json({ error: "Authentication failed" });
     } else {
+     
       res.redirect(
         process.env.NODE_ENV === "development"
-          ? process.env.CLIENT_URL_DEV
+          ? process.env.CLIENT_URL_DEV 
           : process.env.CLIENT_URL_PROD
       );
     }
