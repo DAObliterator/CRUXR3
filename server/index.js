@@ -44,8 +44,8 @@ app.use(session({
     saveUninitialized: false,
     proxy: true,  // this is optional it depend which server you host, i am not sure about Heroku if you need it or not
     cookie: { 
-        secure: "auto",  // this will set to false on developement, but true on Heroku since is https so this setting is required
-        maxAge: 10000, // 10 sec for testing
+        secure: "auto",  
+        maxAge: 1000*60*60*4, // 10 sec for testing
         sameSite: "none", //by default in developement this is false if you're in developement mode
     },
 }))
