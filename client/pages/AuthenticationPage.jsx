@@ -12,7 +12,7 @@ export const AuthenticationPage = () => {
 };
 
 const LoginComponent = () => {
-  const handleSubmit = async (ev) => {
+  /*const handleSubmit = async (ev) => {
     ev.preventDefault();
     axios.get(
       `${
@@ -27,12 +27,12 @@ const LoginComponent = () => {
       console.log(`${error} --- error happened while sending post req to /auth/google/callback endpoint `)
     })
     
-  };
+  };*/
 
 
   return (
     <div id="Login-Main">
-      <form action="" id="Login-Form" onSubmit={(ev) => handleSubmit(ev)}>
+      <form action="" id="Login-Form">
         <h2 id="Login-Heading">LOGIN</h2>
         <button
           id="Google-Btn"
@@ -45,6 +45,13 @@ const LoginComponent = () => {
           }}
           type="submit"
         >
+          <a
+            href={
+              import.meta.env.VITE_ENV === "development"
+                ? import.meta.env.VITE_API_DEV + "/auth/google"
+                : import.meta.env.VITE_API_PROD + "/auth/google"
+            }
+          ></a>
           Sign In With Google
           <FaGoogle
             style={{
