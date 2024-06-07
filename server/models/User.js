@@ -19,6 +19,10 @@ const UserSchema = Schema({
      bio: {
       type: String,
       default: ""
+     },
+     password: {
+      type: String,
+      default: " "
      }
 } ,{ timestamps: true})
 

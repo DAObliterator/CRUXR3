@@ -44,7 +44,7 @@ export const ProfilePage = () => {
           `${error} --- error happpened while checking Profile Status`
         );
       });
-  });
+  },[]);
 
   return (
     <div id="Profile-Page-Main">
