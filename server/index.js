@@ -104,7 +104,7 @@ app.get(
 
 
 //so this is where i am making the mistake ?
-app.post(
+app.get(
   "/auth/google/callback",
   passport.authenticate("google", {
     failureRedirect:
