@@ -37,16 +37,20 @@ app.use(
   })
 );
 
-app.set('trust proxy', 1)  // you need to add this
+
+if ( !(process.env.NODE_ENV === "development")) {
+  app.set("trust proxy", 1); // you need to add this
+}
+
 app.use(session({
     secret: "secret",
     resave: false,
     saveUninitialized: false,
-    proxy: true,  // this is optional it depend which server you host, i am not sure about Heroku if you need it or not
+    proxy: process.env.NODE_ENV === "production" && true,  // this is optional it depend which server you host, i am not sure about Heroku if you need it or not
     cookie: { 
         secure: "auto",  
         maxAge: 1000*60*60*4, // 10 sec for testing
-        sameSite: "none", //by default in developement this is false if you're in developement mode
+        sameSite: process.env.NODE_ENV === "development" ? false : "none", //by default in developement this is false if you're in developement mode
     },
 }))
 
