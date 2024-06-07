@@ -48,6 +48,8 @@ app.use(
     }),
     cookie: {
       maxAge: 1000 * 60 * 60,
+      sameSite: process.env.NODE_ENV === "development" ? "lax" : "none", // Adjusted for cross-site cookies
+      secure: process.env.NODE_ENV === "development" ? false : true, // Cookies sent only over HTTPS in production
     },
   })
 );
