@@ -37,7 +37,20 @@ app.use(
   })
 );
 
-app.use(
+app.set('trust proxy', 1)  // you need to add this
+app.use(session({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false,
+    proxy: true,  // this is optional it depend which server you host, i am not sure about Heroku if you need it or not
+    cookie: { 
+        secure: "auto",  // this will set to false on developement, but true on Heroku since is https so this setting is required
+        maxAge: 10000, // 10 sec for testing
+        sameSite: "none", //by default in developement this is false if you're in developement mode
+    },
+}))
+
+/*app.use(
   session({
     resave: false, //changes req,session.cookie when session object is modified
     saveUninitialized: false, //only stores session to session store if modified
@@ -52,7 +65,7 @@ app.use(
       secure: process.env.NODE_ENV === "development" ? false : true, // Cookies sent only over HTTPS in production
     },
   })
-);
+);*/
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -90,10 +103,12 @@ passport.use(
 );
 
 passport.serializeUser(function (user, done) {
+  console.log("calling serializeUser \n");
   done(null, user);
 });
 
 passport.deserializeUser(function (user, done) {
+  console.log("calling deserializeUser \n");
   done(null, user);
 });
 
