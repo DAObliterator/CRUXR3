@@ -109,8 +109,8 @@ app.get(
   passport.authenticate("google", {
     failureRedirect:
       process.env.NODE_ENV === "development"
-        ? process.env.CLIENT_URL_DEV  
-        : process.env.CLIENT_URL_PROD ,
+        ? process.env.CLIENT_URL_DEV + "/authenticate"  
+        : process.env.CLIENT_URL_PROD + "/authenticate" ,
   }),
   (req, res) => {
     console.log(
@@ -121,8 +121,8 @@ app.get(
     } else {
       res.redirect(
         process.env.NODE_ENV === "development"
-          ? process.env.CLIENT_URL_DEV + `/profile/${req.user.displayName}`
-          : process.env.CLIENT_URL_PROD + `/profile/${req.user.displayName}`
+          ? process.env.CLIENT_URL_DEV  
+          : process.env.CLIENT_URL_PROD 
       );
     }
     // return user details
