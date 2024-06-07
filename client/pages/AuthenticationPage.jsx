@@ -51,8 +51,10 @@ const LoginComponent = () => {
                 ? import.meta.env.VITE_API_DEV + "/auth/google"
                 : import.meta.env.VITE_API_PROD + "/auth/google"
             }
-          ></a>
-          Sign In With Google
+          >
+            Sign In With Google
+          </a>
+
           <FaGoogle
             style={{
               fontSize: "1.5rem",
