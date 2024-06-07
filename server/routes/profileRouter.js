@@ -26,7 +26,7 @@ router.get("/getUserDetails", (req, res) => {
 
 
 router.get("/profileStatus", async (req, res) => {
-  console.log(`you have hit /profileStatus endpoint \n`);
+  console.log(`you have hit /profileStatus endpoint ${req.user} \n`);
 
   if (req.isAuthenticated()) {
     console.log(
@@ -37,9 +37,7 @@ router.get("/profileStatus", async (req, res) => {
       name: req.user.displayName
     })
 
-    if ( currentUser ) {
-
-      if ( currentUser.bio === "" && currentUser.username === "") {
+    if ( currentUser ) {      if ( currentUser.bio === "" && currentUser.username === "") {
         res.status(200).json({ message: "profile status incomplete" ,complete: false })
       } else {
         res
