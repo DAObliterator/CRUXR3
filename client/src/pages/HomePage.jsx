@@ -6,11 +6,11 @@ import { FaPodcast } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { FaArrowAltCircleRight } from "react-icons/fa";
 import axios from "axios";
-import { setUserDetails } from "../src/features/users/userSlice";
 
 export const HomePage = () => {
-  const dispatch = useDispatch();
   const [user, setUser] = useState({});
+
+  
 
   useEffect(() => {
     axios
@@ -26,6 +26,11 @@ export const HomePage = () => {
         console.log(`${JSON.stringify(response.data)} --- response \n`);
 
         setUser(response.data);
+
+        
+
+        
+
 
         if (
           !window.sessionStorage.getItem("name") &&
@@ -45,7 +50,7 @@ export const HomePage = () => {
       });
   }, []);
 
-  dispatch(setUserDetails(user));
+  
 
   return (
     <div id="HomePage-Main">
@@ -82,7 +87,7 @@ export const HomePage = () => {
         ) : (
           <p href="/profile">
             {" "}
-            Hello {window.sessionStorage.getItem("name")} Finish Setting up Your{" "}
+            Hello {window.sessionStorage.getItem("name")} To Create Podcast, Head to Your {" "}
             <a
               href={`profile/${
                 window.sessionStorage.getItem("name")
