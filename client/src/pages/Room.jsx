@@ -12,6 +12,8 @@ export const Room = () => {
   const socket = useContext(SocketContext);
   const [hostInfo, setHostInfo] = useState({});
   const [viewers, setViewers] = useState([]);
+  const [message, setMessage] = useState("");
+  const [allMessages, setAllMessages] = useState([]);
   const hostAudio = useRef();
   const hostStream = new MediaStream();
   const roomID = roomname;
@@ -21,8 +23,9 @@ export const Room = () => {
     window.sessionStorage.getItem(
       window.sessionStorage.getItem("podcastTopic")
     ) === roomname;
-  const { podcastListeners , setPodcastListeners } = useContext(UsersInPodcastContext);
-
+  const { podcastListeners, setPodcastListeners } = useContext(
+    UsersInPodcastContext
+  );
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -52,7 +55,9 @@ export const Room = () => {
             console.log(`new listener just joined -- ${JSON.stringify(data)}`);
 
             let userToSignal = data.userToSignal;
-            setPodcastListeners((prevPodcastListeners) => prevPodcastListeners.concat(data.userToSignalInfo))
+            setPodcastListeners((prevPodcastListeners) =>
+              prevPodcastListeners.concat(data.userToSignalInfo)
+            );
 
             const peer = new RTCPeerConnection({
               iceServers: [
@@ -98,7 +103,6 @@ export const Room = () => {
               // Set the answer as the remote description
               await peer.setRemoteDescription(answer);
             });
-            
           });
         })
         .catch((error) => {
@@ -127,12 +131,12 @@ export const Room = () => {
           ],
         });
 
-         peer.onnegotiationneeded = async () => {
-           const answer = await peer.createAnswer();
-           await peer.setLocalDescription(offer);
+        peer.onnegotiationneeded = async () => {
+          const answer = await peer.createAnswer();
+          await peer.setLocalDescription(offer);
 
-           socket.emit("answer", { callerID, signal: peer.localDescription });
-         };
+          socket.emit("answer", { callerID, signal: peer.localDescription });
+        };
 
         peer.onicecandidate = (event) => {
           if (event.candidate) {
@@ -143,13 +147,9 @@ export const Room = () => {
           }
         };
 
-       
-
         socket.on("host-icecandidate", async (data) => {
-
           console.log(data, "data in host-ice-candidate");
           await peer.addIceCandidate(data.hostIceCandidate);
-
         });
 
         peer.ontrack = (event) => {
@@ -157,40 +157,40 @@ export const Room = () => {
           hostStream.addTrack(event.streams[0].getTracks()[0]);
           hostAudio.current.srcObject = hostStream;
         };
-
-      
-
       });
 
-        socket.on("new listener", (data) => {
+      socket.on("new listener", (data) => {
+        console.log(
+          `you joined , all usersInRoom ${JSON.stringify(data.usersInRoom)} `
+        );
+
+        if (data.usersInRoom.length > 0) {
+          let temp = {};
+          let listenersArray = [];
+          data.usersInRoom.forEach((item) => {
+            if (item.host === true) {
+              temp = item;
+            }
+          });
+
+          listenersArray = data.usersInRoom.filter((item) => {
+            if (item.host === false) {
+              return item;
+            }
+          });
+
           console.log(
-            `you joined , all usersInRoom ${JSON.stringify(data.usersInRoom)} `
+            `host info from array --- ${JSON.stringify(
+              temp
+            )} and ${listenersArray}`
           );
 
-          if (data.usersInRoom.length > 0) {
-            let temp = {};
-            let listenersArray = [];
-            data.usersInRoom.forEach((item) => {
-              if (item.host === true) {
-                temp = item;
-              }
-            });
-
-            listenersArray = data.usersInRoom.filter((item) => {
-              if (item.host === false) {
-                return item;
-              }
-            });
-
-            console.log(
-              `host info from array --- ${JSON.stringify(
-                temp
-              )} and ${listenersArray}`
-            );
-
-            setHostInfo({ hostName: temp.name , hostProfilePhoto: temp.profilePhoto});
-          }
-        });
+          setHostInfo({
+            hostName: temp.name,
+            hostProfilePhoto: temp.profilePhoto,
+          });
+        }
+      });
 
       /*
       start sending media only upon receving permission to receive media 
@@ -200,11 +200,26 @@ export const Room = () => {
       */
     }
 
+    socket.on("receive message", (data) => {
+      console.log(` message received ${JSON.stringify(data)} \n  `);
+      setAllMessages((prevAllMessages) => [...prevAllMessages , data] )
+    });
+
     return () => {
       socket.off("connect");
       socket.off("new-listener");
     };
   }, [socket]);
+
+  const sendMessage = (ev) => {
+    ev.preventDefault();
+
+    if (message === "") {
+      alert("Message input field is empty!!!");
+    } else {
+      socket.emit("send message", { roomID, message });
+    }
+  };
 
   return (
     <div id="Room-Main">
@@ -270,6 +285,40 @@ export const Room = () => {
             </div>
           )}
         </div>
+      </div>
+      <div id="Live-Chat-Section">
+        <h2 id="LIVE-CHAT-HEADING" style={{backgroundColor: "black", color: "white" ,padding: "0.5rem" }} >LIVE CHAT SECTION</h2>
+        <div id="Chat-Section">
+            {Array.isArray(allMessages) && allMessages.length > 0 && allMessages.map((item) => {
+              return (
+                <div id="Main-Message-Div" key={item.name}>
+                  <div id="Profile-Name">
+                    <div id="Sender-Pic-Div">
+                      <img src={item.profilePhoto} alt="" />
+                    </div>
+
+                    <div id="Sender-Name"> {item.name} </div>
+                  </div>
+                  <div id="Message-Time">
+                    <div id="Sender-Message">{item.message} </div>
+                    <div id="Sender-Time" >
+                      {" "}
+                      <p>{item.time}</p>{" "}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+        <form action="" id="Message-Panel" onSubmit={(ev) => sendMessage(ev)}>
+          <input
+            type="text"
+            id="Message-Input"
+            placeholder="Send Mssg..."
+            onChange={(ev) => setMessage(ev.target.value)}
+          />
+          <button id="Send-Message">SEND</button>
+        </form>
       </div>
     </div>
   );

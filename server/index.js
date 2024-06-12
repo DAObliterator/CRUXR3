@@ -134,6 +134,8 @@ const namesToRoomsMap = {};
 const socketToUsersMap = {};
 const roomIdToSocketsMap = {};
 
+//function that returns userDetails given the socket.id 
+
 io.on("connection", (socket) => {
   //only the host emits this event
   socket.on("room-created", (data) => {
@@ -283,6 +285,33 @@ io.on("connection", (socket) => {
 
     socket.to(data.callerID).emit("answer", { signal: data.signal });
   });
+
+  socket.on("send message" , (data) => {
+
+    console.log(`${JSON.stringify(data)} --- in send message`)
+    let senderDetails = socketToUsersMap[socket.id];
+     
+    senderDetails["message"] = data.message;
+    
+    var currentdate = new Date();
+    var datetime =
+      currentdate.getDate() +
+      "/" +
+      (currentdate.getMonth() + 1) +
+      "/" +
+      currentdate.getFullYear() +
+      " @ " +
+      currentdate.getHours() +
+      ":" +
+      currentdate.getMinutes() +
+      ":" +
+      currentdate.getSeconds();
+
+    senderDetails["time"] = datetime;
+
+    io.to(data.roomID).emit("receive message" , senderDetails) 
+  })
+
 });
 
 app.get(
