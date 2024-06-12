@@ -50,7 +50,7 @@ export const Rooms = () => {
       socket.off("connect");
       socket.off("room-created");
     };
-  }, []);
+  }, [socket]);
 
   return (
     <div id="Rooms-Main">

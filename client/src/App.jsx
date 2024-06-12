@@ -13,21 +13,13 @@ import { Rooms } from "./pages/Rooms";
 import { Room } from "./pages/Room";
 import { SocketProvider } from "./context/socketContext";
 import { DummyPage } from "./pages/DummyPage";
-
-
+import { UsersInPodcastProvider } from "./context/usersInPodcast";
 
 function App() {
   const [sidebar, setSidebar] = useState(false);
   const [name, setName] = useState();
   const [authenticated, setAuthenticated] = useState(false);
 
-  
- 
-
- 
-
-
-  
   useEffect(() => {
     if (window.sessionStorage.getItem("name")) {
       console.log("Authenticated in App.jsx component");
@@ -56,53 +48,55 @@ function App() {
   return (
     <Router>
       <SocketProvider>
-        <div id="App-Main">
-          {!sidebar && (
-            <GiHamburgerMenu
-              style={{
-                color: "white",
-                fontSize: "3rem",
-                position: "absolute",
-                right: 0,
-              }}
-              onClick={(ev) => displayNavbar(ev)}
-            ></GiHamburgerMenu>
-          )}
-          {sidebar && <Sidebar destroySideBar={destroySideBar}></Sidebar>}
-          <Routes>
-            <Route path="/" element={<HomePage></HomePage>}></Route>
-            {!authenticated && (
-              <Route
-                path="/authenticate"
-                element={<AuthenticationPage></AuthenticationPage>}
-              ></Route>
+        <UsersInPodcastProvider>
+          <div id="App-Main">
+            {!sidebar && (
+              <GiHamburgerMenu
+                style={{
+                  color: "white",
+                  fontSize: "3rem",
+                  position: "absolute",
+                  right: 0,
+                }}
+                onClick={(ev) => displayNavbar(ev)}
+              ></GiHamburgerMenu>
             )}
-            {authenticated && (
-              <Route
-                path="/profile/:username"
-                element={name !== "" && <ProfilePage></ProfilePage>}
-              ></Route>
-            )}
-            {authenticated && (
-              <Route
-                path="/rooms/:roomname"
-                element={name !== "" && <Room></Room>}
-              ></Route>
-            )}
-            {authenticated && (
-              <Route
-                path="/rooms"
-                element={name !== "" && <Rooms></Rooms>}
-              ></Route>
-            )}
-            {authenticated && (
-              <Route
-                path="/chatrooms"
-                element={name !== "" && <DummyPage></DummyPage> }
-              ></Route>
-            )}
-          </Routes>
-        </div>
+            {sidebar && <Sidebar destroySideBar={destroySideBar}></Sidebar>}
+            <Routes>
+              <Route path="/" element={<HomePage></HomePage>}></Route>
+              {!authenticated && (
+                <Route
+                  path="/authenticate"
+                  element={<AuthenticationPage></AuthenticationPage>}
+                ></Route>
+              )}
+              {authenticated && (
+                <Route
+                  path="/profile/:username"
+                  element={name !== "" && <ProfilePage></ProfilePage>}
+                ></Route>
+              )}
+              {authenticated && (
+                <Route
+                  path="/rooms/:roomname"
+                  element={name !== "" && <Room></Room>}
+                ></Route>
+              )}
+              {authenticated && (
+                <Route
+                  path="/rooms"
+                  element={name !== "" && <Rooms></Rooms>}
+                ></Route>
+              )}
+              {authenticated && (
+                <Route
+                  path="/chatrooms"
+                  element={name !== "" && <DummyPage></DummyPage>}
+                ></Route>
+              )}
+            </Routes>
+          </div>
+        </UsersInPodcastProvider>
       </SocketProvider>
     </Router>
   );

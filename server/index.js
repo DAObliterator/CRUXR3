@@ -131,6 +131,8 @@ passport.deserializeUser(function (user, done) {
 
 const hostToPodcastMap = {};
 const namesToRoomsMap = {};
+const socketToUsersMap = {};
+const roomIdToSocketsMap = {};
 
 io.on("connection", (socket) => {
   //only the host emits this event
@@ -139,21 +141,33 @@ io.on("connection", (socket) => {
       hostToPodcastMap[data.roomID] = data;
     }
 
-    console.log(hostToPodcastMap , "hostToPodcastMap --- in room-created")
+    if (
+      Array.isArray(roomIdToSocketsMap[data.roomID]) &&
+      roomIdToSocketsMap[data.roomID].length > 0
+    ) {
+      roomIdToSocketsMap[data.roomID].push(socket.id);
+    } else {
+      let tempArray = [];
+      tempArray.push(socket.id);
+      roomIdToSocketsMap[data.roomID] = tempArray;
+    }
+
+    console.log(hostToPodcastMap, "hostToPodcastMap --- in room-created");
 
     socket.join(data.roomID);
 
-    socket.to(data.roomID).emit("host-information", data);
-    socket.emit("room-created" , data );
-    socket.emit("room-creation-success", data);
+    socketToUsersMap[socket.id] = {
+      name: data.hostName,
+      profilePhoto: data.hostProfilePic,
+      socketId: socket.id,
+      host: true,
+    };
   });
 
   socket.on("created-rooms", () => {
-    console.log(
-      `${socket.handshake.auth.roomId} in created-rooms `
-    );
+    console.log(`${socket.handshake.auth.roomId} in created-rooms `);
 
-    console.log(`${JSON.stringify(hostToPodcastMap)} --- hostToPodcastMap`)
+    console.log(`${JSON.stringify(hostToPodcastMap)} --- hostToPodcastMap`);
 
     socket.emit("created-rooms", hostToPodcastMap);
   });
@@ -166,6 +180,10 @@ io.on("connection", (socket) => {
     );
 
     socket.join(data.roomID);
+
+    if (Object.keys(roomIdToSocketsMap).length > 0) {
+      roomIdToSocketsMap[data.roomID].push(socket.id); //problem identified ...
+    }
 
     const user = await User.findOne({
       name: data.name,
@@ -182,15 +200,88 @@ io.on("connection", (socket) => {
       }
     );
 
+    socketToUsersMap[socket.id] = {
+      name: user.name,
+      profilePhoto: user.profilePhoto,
+      socketId: socket.id,
+      host: false,
+    };
+
     console.log(
       `${currentRoom} - in join-room after updating podcastListeners`
     );
 
-    socket
-      .to(data.roomID)
-      .emit("new-listener", { socketId: socket.id, ...data });
+    let allSocketsInRoom = [];
+    Object.keys(roomIdToSocketsMap).forEach((roomId) => {
+      if (roomId === data.roomID) {
+        allSocketsInRoom = roomIdToSocketsMap[roomId];
+      }
+    });
 
-    socket.to(socket.id).emit("joined-room");
+    //send to everyone in the room except you
+    let hostSocketId = "";
+    Object.keys(socketToUsersMap).forEach((socketId) => {
+      if (
+        allSocketsInRoom.includes(socketId) &&
+        socketToUsersMap[socketId].host === true
+      ) {
+        hostSocketId = socketId;
+      }
+    });
+
+    let usersInRoom = [];
+    Object.keys(socketToUsersMap).forEach((socketId) => {
+      usersInRoom.push(socketToUsersMap[socketId]);
+    });
+
+    const currentUserInfo = socketToUsersMap[socket.id];
+
+    //everytime someone new joins send their socketId to host to initiate Web RTC Connection
+    socket.to(hostSocketId).emit("new listener", {
+      userToSignal: socket.id,
+      userToSignalInfo: currentUserInfo,
+    });
+
+    const SocketsInRoom = await io.in(data.roomID).fetchSockets();
+
+
+    
+        
+    socket.emit("new listener", { usersInRoom });
+    
+   
+  });
+
+  //listening to event that sends hosts offer
+  socket.on("offer", (data) => {
+    console.log(`data in offer - ${JSON.stringify(data)}`);
+
+    socket
+      .to(data.userToSignal)
+      .emit("offer", { signal: data.signal, hostSocketId: socket.id });
+  });
+
+  //send ice candidate of host to the listener
+  socket.on("host-icecandidate", (data) => {
+    console.log(`data in host-icecandidate - ${JSON.stringify(data)}`);
+
+    socket
+      .to(data.userToSignal)
+      .emit("host-icecandidate", { hostIceCandidate: data.hostIceCandidate });
+  });
+
+  socket.on("listener-icecandidate", (data) => {
+    console.log(`data in listener-icecandidate - ${JSON.stringify(data)}`);
+
+    socket.to(data.callerID).emit("listener-icecandidate", {
+      listenerIceCandidate: data.listenerIceCandidate,
+    });
+  });
+
+  socket.on("answer", (data) => {
+    console.log(`data in answer - ${JSON.stringify(data)}`);
+
+    socket.to(data.callerID).emit("answer", { signal: data.signal });
   });
 });
 
