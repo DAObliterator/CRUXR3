@@ -3,17 +3,23 @@ import { User } from "../models/User.js";
 
 const router = express.Router();
 
-router.get("/getUserDetails", (req, res) => {
+router.get("/getUserDetails", async (req, res) => {
   console.log(
     req.isAuthenticated(),
     "req.isAuthenticated in /getUserDetails endpoint \n"
   );
 
+  
+
   if (req.isAuthenticated()) {
+
+    const currentUser = await User.findOne({
+      name: req.user.displayName,
+    });
     res.status(200).json({
       name: req.user.displayName,
       email: req.user.emails[0].value,
-      profilePic: req.user.photos[0].value,
+      profilePic: currentUser.profilePhoto,
     });
   } else {
     res.status(401).json({ message: "Unauthenticated" });

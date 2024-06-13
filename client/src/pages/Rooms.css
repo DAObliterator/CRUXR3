@@ -31,6 +31,8 @@
 
 #HostProfilePic {
     clip-path: circle();
+    width: 5rem;
+    height: 5rem;
 }
 
 #Search-For-Rooms {

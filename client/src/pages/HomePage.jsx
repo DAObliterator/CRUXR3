@@ -1,4 +1,4 @@
-import React, { useEffect , useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./HomePage.css";
 import { FaBeer, FaThLarge } from "react-icons/fa";
 import { IconContext } from "react-icons/lib";
@@ -9,8 +9,6 @@ import axios from "axios";
 
 export const HomePage = () => {
   const [user, setUser] = useState({});
-
-  
 
   useEffect(() => {
     axios
@@ -27,11 +25,6 @@ export const HomePage = () => {
 
         setUser(response.data);
 
-        
-
-        
-
-
         if (
           !window.sessionStorage.getItem("name") &&
           !window.sessionStorage.getItem("email") &&
@@ -40,7 +33,6 @@ export const HomePage = () => {
           window.sessionStorage.setItem("name", response.data.name);
           window.sessionStorage.setItem("email", response.data.email);
           window.sessionStorage.setItem("profilePic", response.data.profilePic);
-
         }
       })
       .catch((error) => {
@@ -49,8 +41,6 @@ export const HomePage = () => {
         );
       });
   }, []);
-
-  
 
   return (
     <div id="HomePage-Main">
@@ -87,12 +77,9 @@ export const HomePage = () => {
         ) : (
           <p href="/profile">
             {" "}
-            Hello {window.sessionStorage.getItem("name")} To Create Podcast, Head to Your {" "}
-            <a
-              href={`profile/${
-                window.sessionStorage.getItem("name")
-              }`}
-            >
+            Hello {window.sessionStorage.getItem("name")} To Create Podcast,
+            Head to Your{" "}
+            <a href={`profile/${window.sessionStorage.getItem("name")}`}>
               Profile
             </a>{" "}
           </p>
@@ -101,5 +88,3 @@ export const HomePage = () => {
     </div>
   );
 };
-
-

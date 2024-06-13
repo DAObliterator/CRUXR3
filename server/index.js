@@ -135,7 +135,7 @@ const namesToRoomsMap = {};
 const socketToUsersMap = {};
 const roomIdToSocketsMap = {};
 
-//function that returns userDetails given the socket.id 
+//function that returns userDetails given the socket.id
 
 io.on("connection", (socket) => {
   //only the host emits this event
@@ -247,12 +247,7 @@ io.on("connection", (socket) => {
 
     const SocketsInRoom = await io.in(data.roomID).fetchSockets();
 
-
-    
-        
     socket.emit("new listener", { usersInRoom });
-    
-   
   });
 
   //listening to event that sends hosts offer
@@ -287,13 +282,12 @@ io.on("connection", (socket) => {
     socket.to(data.callerID).emit("answer", { signal: data.signal });
   });
 
-  socket.on("send message" , (data) => {
-
-    console.log(`${JSON.stringify(data)} --- in send message`)
+  socket.on("send message", (data) => {
+    console.log(`${JSON.stringify(data)} --- in send message`);
     let senderDetails = socketToUsersMap[socket.id];
-     
+
     senderDetails["message"] = data.message;
-    
+
     var currentdate = new Date();
     var datetime =
       currentdate.getDate() +
@@ -310,9 +304,8 @@ io.on("connection", (socket) => {
 
     senderDetails["time"] = datetime;
 
-    io.to(data.roomID).emit("receive message" , senderDetails) 
-  })
-
+    io.to(data.roomID).emit("receive message", senderDetails);
+  });
 });
 
 app.get(
@@ -345,24 +338,51 @@ app.get(
   }
 );
 
-app.post("/push-subscription", async (req,res) => {
-
-  console.log(`/push-subscription hit with post req , ${req.isAuthenticated()}`);
+app.post("/push-subscription", async (req, res) => {
+  console.log(
+    `/push-subscription hit with post req , ${req.isAuthenticated()}`
+  );
 
   if (req.isAuthenticated()) {
-
     console.log(`authenticated ${req.body.token}`);
 
     await Subscription.create({
-      subscription: JSON.stringify(req.body.token)
-    })
-
-  }else {
-    res.status(401).json({ message: "Unauthenticated"})
+      subscription: JSON.stringify(req.body.token),
+    });
+  } else {
+    res.status(401).json({ message: "Unauthenticated" });
   }
+});
 
+app.post("/imageUpload", async (req, res) => {
+  console.log(
+    `/imageUpload endpoint hit with post request ${req.isAuthenticated()}`
+  );
 
-})
+  if (req.isAuthenticated()) {
+    let imageURL = req.body.url;
+    console.log(
+      `${
+        req.user.displayName && req.user.displayName
+      } --- uploaded an image ${imageURL} `
+    );
+
+    const updatedDoc = await User.findOneAndUpdate({
+      name: req.user.displayName
+
+    } , {
+      profilePhoto: imageURL
+    });
+
+    if ( updatedDoc.profilePhoto === imageURL) {
+      console.log(`profileUpdation successfull \n`);
+      res.status(200).json({ message: "Profile Photo Update Successfull" , profilePic :imageURL})
+    }
+
+  } else {
+    res.status(401).json({ message: "Unauthenticated" });
+  }
+});
 
 app.use("/profile", profileRouter);
 app.use("/rooms", RoomRouter);

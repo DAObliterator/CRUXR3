@@ -228,6 +228,7 @@ export const Room = () => {
       alert("Message input field is empty!!!");
     } else {
       socket.emit("send message", { roomID, message });
+      setMessage("");
     }
   };
 
@@ -336,6 +337,7 @@ export const Room = () => {
             type="text"
             id="Message-Input"
             placeholder="Send Mssg..."
+            value={message}
             onChange={(ev) => setMessage(ev.target.value)}
           />
           <button id="Send-Message">SEND</button>

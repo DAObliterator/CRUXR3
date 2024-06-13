@@ -8,6 +8,8 @@ import { MdPodcasts } from "react-icons/md";
 import { FaWindowClose } from "react-icons/fa";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import UploadWidget from "../components/UploadWidget";
+
 
 
 export const ProfilePage = () => {
@@ -243,6 +245,7 @@ const Profile = ({ handleStartPodcastBtnClick }) => {
             style={{ fontSize: "4.5rem", color: "white" }}
           ></MdPodcasts>
         </button>
+        <UploadWidget></UploadWidget>
       </div>
     </div>
   );

@@ -49,6 +49,8 @@
 
 #Host-Profile-Pic {
   clip-path: circle();
+  height: 5rem;
+  width: 5rem;
 }
 
 #Host-Card-Buttons-Panel {
