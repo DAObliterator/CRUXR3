@@ -205,7 +205,7 @@ export const Rooms = () => {
         onChange={(ev) => accurateMatches(ev)}
       ></input>
       <div id="Rooms-Heading">
-        <h1>JOIN ANY ROOM</h1>
+        <h1>JOIN ANY ROOM , TYPE TO DISCOVER </h1>
       </div>
       <div id="All-Active-Rooms">
         {Array.isArray(Object.values(matches)) ? (

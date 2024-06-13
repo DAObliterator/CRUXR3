@@ -20,7 +20,6 @@ const server = createServer(app);
 
 app.use(express.json());
 
-
 //DATABASE CONNECTION
 const DB = process.env.DB_STRING.replace("<password>", process.env.DB_PASSWORD);
 mongoose
@@ -167,7 +166,6 @@ const createListenerToken = (roomName, participantName) => {
   return at.toJwt();
 };
 
-
 const hostToPodcastMap = {};
 const namesToRoomsMap = {};
 const socketToUsersMap = {};
@@ -196,8 +194,6 @@ io.on("connection", (socket) => {
     console.log(hostToPodcastMap, "hostToPodcastMap --- in room-created");
 
     socket.join(data.roomID);
-
-
 
     socketToUsersMap[socket.id] = {
       name: data.hostName,
@@ -288,7 +284,6 @@ io.on("connection", (socket) => {
     const SocketsInRoom = await io.in(data.roomID).fetchSockets();
 
     socket.emit("new listener", { usersInRoom });
-
   });
 
   //listening to event that sends hosts offer
@@ -408,18 +403,24 @@ app.post("/imageUpload", async (req, res) => {
       } --- uploaded an image ${imageURL} `
     );
 
-    const updatedDoc = await User.findOneAndUpdate({
-      name: req.user.displayName
+    const updatedDoc = await User.findOneAndUpdate(
+      {
+        name: req.user.displayName,
+      },
+      {
+        profilePhoto: imageURL,
+      }
+    );
 
-    } , {
-      profilePhoto: imageURL
-    });
-
-    if ( updatedDoc.profilePhoto === imageURL) {
+    if (updatedDoc.profilePhoto === imageURL) {
       console.log(`profileUpdation successfull \n`);
-      res.status(200).json({ message: "Profile Photo Update Successfull" , profilePic :imageURL})
+      res
+        .status(200)
+        .json({
+          message: "Profile Photo Update Successfull",
+          profilePic: imageURL,
+        });
     }
-
   } else {
     res.status(401).json({ message: "Unauthenticated" });
   }

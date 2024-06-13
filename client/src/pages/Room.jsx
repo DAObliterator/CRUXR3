@@ -14,10 +14,11 @@ export const Room = () => {
   const [viewers, setViewers] = useState([]);
   const [message, setMessage] = useState("");
   const [allMessages, setAllMessages] = useState([]);
-  const hostAudio = useRef();
+  const hostAudio = useRef(null);
   const hostStream = new MediaStream();
   const roomID = roomname;
   const yourName = window.sessionStorage.getItem("name");
+  const serverUrl = "wss://sermo-1ziqsqlh.livekit.cloud";
   const isHost =
     window.sessionStorage.getItem("podcastTopic") !== null &&
     window.sessionStorage.getItem(
@@ -98,7 +99,9 @@ export const Room = () => {
             });
 
             socket.on("answer", async (data) => {
-              console.log(`host received an answer from client ${JSON.stringify(data)} `)
+              console.log(
+                `host received an answer from client ${JSON.stringify(data)} `
+              );
               const answer = new RTCSessionDescription(data.answer);
 
               // Set the answer as the remote description
@@ -120,12 +123,10 @@ export const Room = () => {
       });
 
       socket.on("offer", async (data) => {
-        
-
         let signalFromHost = data.signal;
         let callerID = data.hostSocketId;
 
-        console.log(`host sent an ${JSON.stringify(data)}  `)
+        console.log(`host sent an ${JSON.stringify(data)}  `);
 
         const peer = new RTCPeerConnection({
           iceServers: [
@@ -134,18 +135,14 @@ export const Room = () => {
           ],
         });
 
-       
         await peer.setRemoteDescription(
           new RTCSessionDescription(signalFromHost)
         );
 
-        
         const answer = await peer.createAnswer();
 
-        
         await peer.setLocalDescription(answer);
 
-        
         socket.emit("answer", { callerID, signal: peer.localDescription });
 
         peer.onicecandidate = (event) => {
@@ -215,6 +212,7 @@ export const Room = () => {
       setAllMessages((prevAllMessages) => [...prevAllMessages, data]);
     });
 
+    
     return () => {
       socket.off("connect");
       socket.off("new-listener");
