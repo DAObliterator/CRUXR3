@@ -10,6 +10,7 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 import { profileRouter } from "./routes/profileRouter.js";
 import { RoomRouter } from "./routes/roomRouter.js";
+import { Subscription } from "./models/Subscription.js";
 //import "./utils/passport.js"
 import { User } from "./models/User.js";
 import { Room } from "./models/Room.js";
@@ -343,6 +344,25 @@ app.get(
     // return user details
   }
 );
+
+app.post("/push-subscription", async (req,res) => {
+
+  console.log(`/push-subscription hit with post req , ${req.isAuthenticated()}`);
+
+  if (req.isAuthenticated()) {
+
+    console.log(`authenticated ${req.body.token}`);
+
+    await Subscription.create({
+      subscription: JSON.stringify(req.body.token)
+    })
+
+  }else {
+    res.status(401).json({ message: "Unauthenticated"})
+  }
+
+
+})
 
 app.use("/profile", profileRouter);
 app.use("/rooms", RoomRouter);
