@@ -15,6 +15,8 @@ import { SocketProvider } from "./context/socketContext";
 import { DummyPage } from "./pages/DummyPage";
 import { UsersInPodcastProvider } from "./context/usersInPodcast";
 
+// Import the functions you need from the SDKs you need
+
 function App() {
   const [sidebar, setSidebar] = useState(false);
   const [name, setName] = useState();

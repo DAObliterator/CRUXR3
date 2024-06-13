@@ -98,6 +98,7 @@ export const Room = () => {
             });
 
             socket.on("answer", async (data) => {
+              console.log(`host received an answer from client ${JSON.stringify(data)} `)
               const answer = new RTCSessionDescription(data.answer);
 
               // Set the answer as the remote description
@@ -118,11 +119,13 @@ export const Room = () => {
         roomID,
       });
 
-      socket.on("offer", (data) => {
-        //addPeer( data.signal , data.hostSocketId );
+      socket.on("offer", async (data) => {
+        
 
         let signalFromHost = data.signal;
         let callerID = data.hostSocketId;
+
+        console.log(`host sent an ${JSON.stringify(data)}  `)
 
         const peer = new RTCPeerConnection({
           iceServers: [
@@ -131,12 +134,19 @@ export const Room = () => {
           ],
         });
 
-        peer.onnegotiationneeded = async () => {
-          const answer = await peer.createAnswer();
-          await peer.setLocalDescription(offer);
+       
+        await peer.setRemoteDescription(
+          new RTCSessionDescription(signalFromHost)
+        );
 
-          socket.emit("answer", { callerID, signal: peer.localDescription });
-        };
+        
+        const answer = await peer.createAnswer();
+
+        
+        await peer.setLocalDescription(answer);
+
+        
+        socket.emit("answer", { callerID, signal: peer.localDescription });
 
         peer.onicecandidate = (event) => {
           if (event.candidate) {
@@ -202,7 +212,7 @@ export const Room = () => {
 
     socket.on("receive message", (data) => {
       console.log(` message received ${JSON.stringify(data)} \n  `);
-      setAllMessages((prevAllMessages) => [...prevAllMessages , data] )
+      setAllMessages((prevAllMessages) => [...prevAllMessages, data]);
     });
 
     return () => {
@@ -287,9 +297,20 @@ export const Room = () => {
         </div>
       </div>
       <div id="Live-Chat-Section">
-        <h2 id="LIVE-CHAT-HEADING" style={{backgroundColor: "black", color: "white" ,padding: "0.5rem" }} >LIVE CHAT SECTION</h2>
+        <h2
+          id="LIVE-CHAT-HEADING"
+          style={{
+            backgroundColor: "black",
+            color: "white",
+            padding: "0.5rem",
+          }}
+        >
+          LIVE CHAT SECTION
+        </h2>
         <div id="Chat-Section">
-            {Array.isArray(allMessages) && allMessages.length > 0 && allMessages.map((item) => {
+          {Array.isArray(allMessages) &&
+            allMessages.length > 0 &&
+            allMessages.map((item) => {
               return (
                 <div id="Main-Message-Div" key={item.name}>
                   <div id="Profile-Name">
@@ -301,7 +322,7 @@ export const Room = () => {
                   </div>
                   <div id="Message-Time">
                     <div id="Sender-Message">{item.message} </div>
-                    <div id="Sender-Time" >
+                    <div id="Sender-Time">
                       {" "}
                       <p>{item.time}</p>{" "}
                     </div>

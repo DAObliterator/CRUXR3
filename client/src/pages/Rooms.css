@@ -33,6 +33,14 @@
     clip-path: circle();
 }
 
+#Search-For-Rooms {
+    width: 80vw;
+    height: 3rem;
+    border-radius: 2rem;
+    top: 1rem;
+    padding: 0.5rem;
+}
+
 
 
 
