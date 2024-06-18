@@ -158,6 +158,7 @@ export const Rooms = () => {
 
       return matrix[len1][len2];
     }
+    
     if (searchString !== "") {
 
       let tempArray = [];

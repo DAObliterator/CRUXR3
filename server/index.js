@@ -9,6 +9,7 @@ import MongoStore from "connect-mongo";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import { profileRouter } from "./routes/profileRouter.js";
+import { ExpressPeerServer } from "peer";
 import { RoomRouter } from "./routes/roomRouter.js";
 import { Subscription } from "./models/Subscription.js";
 import { AccessToken } from "livekit-server-sdk";
@@ -19,7 +20,6 @@ const app = express();
 const server = createServer(app);
 
 app.use(express.json());
-
 
 //DATABASE CONNECTION
 const DB = process.env.DB_STRING.replace("<password>", process.env.DB_PASSWORD);
@@ -131,41 +131,7 @@ passport.deserializeUser(function (user, done) {
   done(null, user);
 });
 
-const createHostToken = (roomName, participantName) => {
-  const at = new AccessToken(
-    process.env.LIVEKIT_API_KEY,
-    process.env.LIVEKIT_API_SECRET,
-    {
-      identity: participantName,
-      ttl: "1h",
-    }
-  );
-  at.addGrant({
-    roomJoin: true,
-    room: roomName,
-    canPublish: true,
-    canPublishData: true,
-    canManageRoom: true,
-  });
-  return at.toJwt();
-};
-
-const createListenerToken = (roomName, participantName) => {
-  const at = new AccessToken(
-    process.env.LIVEKIT_API_KEY,
-    process.env.LIVEKIT_API_SECRET,
-    {
-      identity: participantName,
-      ttl: "1h",
-    }
-  );
-  at.addGrant({
-    roomJoin: true,
-    room: roomName,
-    canSubscribe: true,
-  });
-  return at.toJwt();
-};
+//peer server configuration
 
 
 const hostToPodcastMap = {};
@@ -196,8 +162,6 @@ io.on("connection", (socket) => {
     console.log(hostToPodcastMap, "hostToPodcastMap --- in room-created");
 
     socket.join(data.roomID);
-
-
 
     socketToUsersMap[socket.id] = {
       name: data.hostName,
@@ -288,39 +252,6 @@ io.on("connection", (socket) => {
     const SocketsInRoom = await io.in(data.roomID).fetchSockets();
 
     socket.emit("new listener", { usersInRoom });
-
-  });
-
-  //listening to event that sends hosts offer
-  socket.on("offer", (data) => {
-    console.log(`data in offer - ${JSON.stringify(data)}`);
-
-    socket
-      .to(data.userToSignal)
-      .emit("offer", { signal: data.signal, hostSocketId: socket.id });
-  });
-
-  //send ice candidate of host to the listener
-  socket.on("host-icecandidate", (data) => {
-    console.log(`data in host-icecandidate - ${JSON.stringify(data)}`);
-
-    socket
-      .to(data.userToSignal)
-      .emit("host-icecandidate", { hostIceCandidate: data.hostIceCandidate });
-  });
-
-  socket.on("listener-icecandidate", (data) => {
-    console.log(`data in listener-icecandidate - ${JSON.stringify(data)}`);
-
-    socket.to(data.callerID).emit("listener-icecandidate", {
-      listenerIceCandidate: data.listenerIceCandidate,
-    });
-  });
-
-  socket.on("answer", (data) => {
-    console.log(`data in answer - ${JSON.stringify(data)}`);
-
-    socket.to(data.callerID).emit("answer", { signal: data.signal });
   });
 
   socket.on("send message", (data) => {
@@ -347,6 +278,10 @@ io.on("connection", (socket) => {
 
     io.to(data.roomID).emit("receive message", senderDetails);
   });
+
+ 
+
+
 });
 
 app.get(
@@ -408,18 +343,24 @@ app.post("/imageUpload", async (req, res) => {
       } --- uploaded an image ${imageURL} `
     );
 
-    const updatedDoc = await User.findOneAndUpdate({
-      name: req.user.displayName
+    const updatedDoc = await User.findOneAndUpdate(
+      {
+        name: req.user.displayName,
+      },
+      {
+        profilePhoto: imageURL,
+      }
+    );
 
-    } , {
-      profilePhoto: imageURL
-    });
-
-    if ( updatedDoc.profilePhoto === imageURL) {
+    if (updatedDoc.profilePhoto === imageURL) {
       console.log(`profileUpdation successfull \n`);
-      res.status(200).json({ message: "Profile Photo Update Successfull" , profilePic :imageURL})
+      res
+        .status(200)
+        .json({
+          message: "Profile Photo Update Successfull",
+          profilePic: imageURL,
+        });
     }
-
   } else {
     res.status(401).json({ message: "Unauthenticated" });
   }

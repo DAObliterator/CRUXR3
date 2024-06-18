@@ -2,23 +2,23 @@ import React, { useEffect, useState, useRef, useContext } from "react";
 import { useParams } from "react-router-dom";
 import "./Room.css";
 import { SocketContext } from "../context/socketContext";
-import SimplePeer from "simple-peer";
 import axios from "axios";
 import { IoExit } from "react-icons/io5";
 import { UsersInPodcastContext } from "../context/usersInPodcast";
+import { Peer } from "peerjs";
 
 export const Room = () => {
   const { roomname } = useParams();
   const socket = useContext(SocketContext);
   const [hostInfo, setHostInfo] = useState({});
-  const [viewers, setViewers] = useState([]);
   const [message, setMessage] = useState("");
+  const [viewers, setViewers] = useState([]);
   const [allMessages, setAllMessages] = useState([]);
   const hostAudio = useRef(null);
-  const hostStream = new MediaStream();
   const roomID = roomname;
   const yourName = window.sessionStorage.getItem("name");
   const serverUrl = "wss://sermo-1ziqsqlh.livekit.cloud";
+
   const isHost =
     window.sessionStorage.getItem("podcastTopic") !== null &&
     window.sessionStorage.getItem(
@@ -36,82 +36,54 @@ export const Room = () => {
     if (isHost) {
       console.log(`host at ${roomID}`);
 
-      //CAPTURING MEDIA FOR HOST...
-      navigator.mediaDevices
-        .getUserMedia({ audio: true })
-        .then((stream) => {
-          socket.emit("room-created", {
-            hostName: window.sessionStorage.getItem("name"),
-            roomID: roomID,
-            podcastTopic: window.sessionStorage.getItem("podcastTopic"),
-            hostProfilePic: window.sessionStorage.getItem("profilePic"),
+      setHostInfo({
+        hostName: window.sessionStorage.getItem("name"),
+        hostProfilePhoto: window.sessionStorage.getItem("profilePic"),
+      });
+
+      socket.emit("room-created", {
+        hostName: window.sessionStorage.getItem("name"),
+        roomID: roomID,
+        podcastTopic: window.sessionStorage.getItem("podcastTopic"),
+        hostProfilePic: window.sessionStorage.getItem("profilePic"),
+      });
+
+      const hostPeer = new Peer(window.sessionStorage.getItem("name"));
+
+      socket.on("new listener", (data) => {
+        console.log(`new listener just joined -- ${JSON.stringify(data)}`);
+
+        let userToSignal = data.userToSignal;
+
+        //new person has joined show components so that host can give permission to speak
+       setViewers((prevViewers) => {
+         const viewerExists = prevViewers.some(
+           (viewer) => viewer.name === data.userToSignalInfo.name
+         );
+         if (!viewerExists) {
+           return [...prevViewers, data.userToSignalInfo];
+         }
+         return prevViewers;
+       });
+
+        navigator.mediaDevices
+          .getUserMedia({ audio: true })
+          .then((stream) => {
+            hostAudio.current.srcObject = stream;
+
+            hostPeer.on("open", (id) => {
+              console.log(id, "hostPeer connection id ");
+            });
+            console.log(`audio intended for ${data.userToSignalInfo.name}`);
+            const call = hostPeer.call(data.userToSignalInfo.name, stream);
+            call.on("error", (err) => {
+              console.error("Call error:", err);
+            });
+          })
+          .catch((error) => {
+            console.log(`error accessing media devices ${error}`);
           });
-
-          setHostInfo({
-            hostName: window.sessionStorage.getItem("name"),
-            hostProfilePhoto: window.sessionStorage.getItem("profilePic"),
-          });
-
-          socket.on("new listener", (data) => {
-            console.log(`new listener just joined -- ${JSON.stringify(data)}`);
-
-            let userToSignal = data.userToSignal;
-            setPodcastListeners((prevPodcastListeners) =>
-              prevPodcastListeners.concat(data.userToSignalInfo)
-            );
-
-            const peer = new RTCPeerConnection({
-              iceServers: [
-                { urls: "stun:stun.l.google.com:19302" },
-                { urls: "stun:stun1.l.google.com:19302" },
-              ],
-            });
-
-            peer.onnegotiationneeded = async () => {
-              console.log(`inside onnegotiation `);
-              const offer = await peer.createOffer();
-              await peer.setLocalDescription(offer);
-              socket.emit("offer", {
-                userToSignal,
-                signal: peer.localDescription,
-              });
-            };
-
-            peer.onicecandidate = (event) => {
-              console.log(`inside onicecandidate - ${event}`);
-              if (event.candidate) {
-                socket.emit("host-icecandidate", {
-                  userToSignal,
-                  hostIceCandidate: event.candidate,
-                });
-              }
-            };
-
-            console.log("Connection state:", peer.connectionState);
-
-            stream?.getTracks().forEach((track) => {
-              hostStream.addTrack(track);
-              peer.addTrack(track, stream);
-            });
-
-            socket.on("listener-icecandidate", async (data) => {
-              await peer.addIceCandidate(data.listenerIceCandidate);
-            });
-
-            socket.on("answer", async (data) => {
-              console.log(
-                `host received an answer from client ${JSON.stringify(data)} `
-              );
-              const answer = new RTCSessionDescription(data.answer);
-
-              // Set the answer as the remote description
-              await peer.setRemoteDescription(answer);
-            });
-          });
-        })
-        .catch((error) => {
-          console.log(`error accessing media devices ${error}`);
-        });
+      });
     } else {
       //you are a listener not a host
       console.log(`listener on ${roomID}`);
@@ -122,55 +94,34 @@ export const Room = () => {
         roomID,
       });
 
-      socket.on("offer", async (data) => {
-        let signalFromHost = data.signal;
-        let callerID = data.hostSocketId;
+      const listenerPeer = new Peer(window.sessionStorage.getItem("name"));
 
-        console.log(`host sent an ${JSON.stringify(data)}  `);
-
-        const peer = new RTCPeerConnection({
-          iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            { urls: "stun:stun1.l.google.com:19302" },
-          ],
-        });
-
-        await peer.setRemoteDescription(
-          new RTCSessionDescription(signalFromHost)
-        );
-
-        const answer = await peer.createAnswer();
-
-        await peer.setLocalDescription(answer);
-
-        socket.emit("answer", { callerID, signal: peer.localDescription });
-
-        peer.onicecandidate = (event) => {
-          if (event.candidate) {
-            socket.emit("listener-icecandidate", {
-              callerID,
-              listenerIceCandidate: event.candidate,
-            });
-          }
-        };
-
-        socket.on("host-icecandidate", async (data) => {
-          console.log(data, "data in host-ice-candidate");
-          await peer.addIceCandidate(data.hostIceCandidate);
-        });
-
-        peer.ontrack = (event) => {
-          console.log(event.streams[0], "--streams");
-          hostStream.addTrack(event.streams[0].getTracks()[0]);
-          hostAudio.current.srcObject = hostStream;
-        };
+      listenerPeer.on("open", (id) => {
+        console.log(`${id} of listener `);
       });
 
-      socket.on("new listener", (data) => {
-        console.log(
-          `you joined , all usersInRoom ${JSON.stringify(data.usersInRoom)} `
-        );
+      listenerPeer.on(
+        "call",
+        (call) => {
+          console.log(call, "call in listener");
 
+          call.answer();
+
+          call.on("stream", (stream) => {
+            console.log(` Stream received: ${stream}`);
+            hostAudio.current.srcObject = stream;
+          });
+
+          call.on("error", (err) => {
+            console.error("Call error:", err);
+          });
+        },
+        (error) => {
+          console.log(`${error} - happened when listening to call `);
+        }
+      );
+
+      socket.on("new listener", (data) => {
         if (data.usersInRoom.length > 0) {
           let temp = {};
           let listenersArray = [];
@@ -186,25 +137,12 @@ export const Room = () => {
             }
           });
 
-          console.log(
-            `host info from array --- ${JSON.stringify(
-              temp
-            )} and ${listenersArray}`
-          );
-
           setHostInfo({
             hostName: temp.name,
             hostProfilePhoto: temp.profilePhoto,
           });
         }
       });
-
-      /*
-      start sending media only upon receving permission to receive media 
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-        
-      });
-      */
     }
 
     socket.on("receive message", (data) => {
@@ -212,7 +150,6 @@ export const Room = () => {
       setAllMessages((prevAllMessages) => [...prevAllMessages, data]);
     });
 
-    
     return () => {
       socket.off("connect");
       socket.off("new-listener");
@@ -235,7 +172,6 @@ export const Room = () => {
       <div id="Room-Card">
         <div id="Speakers-Main">
           <h4>SPEAKERS...</h4>
-          {console.log(podcastListeners)}
           {Object.keys(hostInfo).length > 0 ? (
             <div id="Host-Card-Main-Main" key={hostInfo.hostName}>
               <div id="Host-Card-Main">
@@ -258,7 +194,7 @@ export const Room = () => {
           ) : (
             <div>NO HOST? ... </div>
           )}
-          <audio ref={hostAudio} controls autoPlay></audio>
+          <audio ref={hostAudio} autoPlay></audio>
         </div>
         <div id="Breaker"></div>
         <div id="Viewers-Main">
@@ -272,10 +208,14 @@ export const Room = () => {
                     <img
                       id="Viewer-Profile-Pic"
                       src={viewer.profilePhoto}
+                      style={{ height: "4rem", width: "4rem" }}
                       alt=""
                     />{" "}
                   </div>
-                  <div id="Viewer-Name"> {viewer.name} </div>{" "}
+                  <div id="Viewer-Name" style={{ fontSize: "1rem" }}>
+                    {" "}
+                    {viewer.name}{" "}
+                  </div>{" "}
                   {viewer.name === yourName && (
                     <div id="Controls-Panel">
                       <button id="Viewer-Exit">

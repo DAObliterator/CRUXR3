@@ -9,6 +9,7 @@ const apiUrl =
 const SocketContext = createContext(null);
 
 const SocketProvider = (props) => {
+  
   const socket = useMemo(() =>
     io(apiUrl, {
       withCredentials: true,
