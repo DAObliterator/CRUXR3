@@ -14,7 +14,7 @@ export const Room = () => {
   const [message, setMessage] = useState("");
   const [viewers, setViewers] = useState([]);
   const [allMessages, setAllMessages] = useState([]);
-  const hostAudio = useRef(null);
+  const hostAudio = useRef(new MediaStream());
   const roomID = roomname;
   const yourName = window.sessionStorage.getItem("name");
   const serverUrl = "wss://sermo-1ziqsqlh.livekit.cloud";
@@ -48,7 +48,14 @@ export const Room = () => {
         hostProfilePic: window.sessionStorage.getItem("profilePic"),
       });
 
-      const hostPeer = new Peer(window.sessionStorage.getItem("name"));
+      const hostPeer = new Peer(window.sessionStorage.getItem("name"), {
+        host:
+          import.meta.env.VITE_ENV === "development"
+            ? "localhost"
+            : "sermobackend.onrender.com",
+        port: 6006,
+        path: "/peerjs",
+      });
 
       socket.on("new listener", (data) => {
         console.log(`new listener just joined -- ${JSON.stringify(data)}`);
@@ -94,7 +101,14 @@ export const Room = () => {
         roomID,
       });
 
-      const listenerPeer = new Peer(window.sessionStorage.getItem("name"));
+      const listenerPeer = new Peer(window.sessionStorage.getItem("name"), {
+        host:
+          import.meta.env.VITE_ENV === "development"
+            ? "localhost"
+            : "sermobackend.onrender.com",
+        port: 6006,
+        path: "/peerjs",
+      });
 
       listenerPeer.on("open", (id) => {
         console.log(`${id} of listener `);
@@ -105,7 +119,7 @@ export const Room = () => {
         (call) => {
           console.log(call, "call in listener");
 
-          call.answer();
+    
 
           call.on("stream", (stream) => {
             console.log(` Stream received: ${stream}`);
@@ -122,6 +136,9 @@ export const Room = () => {
       );
 
       socket.on("new listener", (data) => {
+
+        console.log(`${JSON.stringify(data.usersInRoom)} all usersInRoom`)
+
         if (data.usersInRoom.length > 0) {
           let temp = {};
           let listenersArray = [];
@@ -136,6 +153,26 @@ export const Room = () => {
               return item;
             }
           });
+
+
+          let uniqueItems = new Set();
+          let index = 0;
+
+          while (index < listenersArray.length) {
+            if (uniqueItems.has(listenersArray[index])) {
+              listenersArray.splice(index, 1); // Remove duplicate
+            } else {
+              uniqueItems.add(listenersArray[index]);
+              index++;
+            }
+          }
+
+
+
+          console.log( listenersArray , "listenersArray after removing duplicates \n");
+          
+
+          setViewers(listenersArray);
 
           setHostInfo({
             hostName: temp.name,

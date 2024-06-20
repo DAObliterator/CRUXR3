@@ -314,6 +314,15 @@ app.get(
   }
 );
 
+
+// Create a PeerJS server instance with debug enabled
+const peerServer = ExpressPeerServer(server, {
+    debug: true
+});
+
+// Mount the PeerJS server on the /peerjs route
+app.use('/peerjs', peerServer);
+
 app.post("/push-subscription", async (req, res) => {
   console.log(
     `/push-subscription hit with post req , ${req.isAuthenticated()}`
