@@ -36,7 +36,7 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "development"
-        ? process.env.CLIENT_URL_DEV
+        ? process.env.CLIENT_URL_DEV 
         : process.env.CLIENT_URL_PROD,
     credentials: true,
     methods: "GET,POST,PUT,DELETE",
