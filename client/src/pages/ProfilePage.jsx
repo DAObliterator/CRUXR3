@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import "./ProfilePage.css";
 import { useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import ShortUniqueId from "short-unique-id";
@@ -9,8 +8,6 @@ import { FaWindowClose } from "react-icons/fa";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import UploadWidget from "../components/UploadWidget";
-
-
 
 export const ProfilePage = () => {
   const [profileStatus, setProfileStatus] = useState(false);
@@ -23,9 +20,7 @@ export const ProfilePage = () => {
 
   const navigate = useNavigate();
 
-
   const handleStartPodcastBtnClick = (ev) => {
-    console.log("handleStartPodcastBtnClick function triggered !!!");
     ev.preventDefault();
     setStartPodcastBtn(true);
   };
@@ -37,16 +32,13 @@ export const ProfilePage = () => {
 
   const initiatePodcastCreation = async (ev) => {
     ev.preventDefault();
-    console.log(
-      `initiatePodcastCreation function triggered!!! ${podcastTopic} --- podcastTopic `
-    );
-
     const uid = new ShortUniqueId({ length: 10 }).rnd();
-    const uniquePodcastId = window.sessionStorage.getItem("name") + uid; //creating a unique room id using host id ( displayName in this case ) and a randomId
+    const uniquePodcastId = window.sessionStorage.getItem("name") + uid;
 
-    console.log(`${uniquePodcastId} --- uniquePodcastId`);
-
-    if (window.sessionStorage.getItem(podcastTopic) === null && window.sessionStorage.getItem("podcastTopic") === null ) {
+    if (
+      window.sessionStorage.getItem(podcastTopic) === null &&
+      window.sessionStorage.getItem("podcastTopic") === null
+    ) {
       window.sessionStorage.setItem(podcastTopic, uniquePodcastId);
       window.sessionStorage.setItem("podcastTopic", podcastTopic);
 
@@ -58,37 +50,23 @@ export const ProfilePage = () => {
               : import.meta.env.VITE_API_PROD
           }/rooms/createRoom`,
           { podcastTopic, uniquePodcastId },
-          {
-            withCredentials: true,
-          }
+          { withCredentials: true }
         )
         .then((response) => {
-          console.log(
-            JSON.stringify(response.data),
-            " from response data endpoint"
-          );
-
           if (response.status === 200) {
             navigate(`/rooms/${uniquePodcastId}`);
           }
         })
         .catch((error) => {
-          console.log(
-            `${error} --- error happened while attempting to create a new room`
-          );
+          console.log(`${error} --- error happened while creating a new room`);
         });
     } else {
-      //podcast with the same topic was created
-      alert("You already choose that topic!!");
+      alert("You already chose that topic!!");
     }
     setStartPodcastBtn(false);
   };
 
-  // Use userDetails as needed in your component
-
   useEffect(() => {
-    //api call to see if bio and username field is popdivated or not
-    
     axios
       .get(
         `${
@@ -99,11 +77,6 @@ export const ProfilePage = () => {
         { withCredentials: true }
       )
       .then((response) => {
-        console.log(
-          `${JSON.stringify(
-            response.data
-          )} - response.data from profileStatus endpoint \n`
-        );
         setProfileStatus(response.data.complete);
         if (response.data.complete === true) {
           window.sessionStorage.setItem(
@@ -114,19 +87,15 @@ export const ProfilePage = () => {
         }
       })
       .catch((error) => {
-        console.log(
-          `${error} --- error happpened while checking Profile Status`
-        );
+        console.log(`${error} --- error checking Profile Status`);
       });
   }, []);
 
   return (
-    <div id="Profile-Page-Main">
+    <div className=" min-h-screen flex items-center justify-center p-4 w-screen">
       {profileStatus ? (
-        <div id="Final-Profile-Main">
-          <Profile
-            handleStartPodcastBtnClick={handleStartPodcastBtnClick}
-          ></Profile>
+        <div className="w-full max-w-xl mx-auto p-4">
+          <Profile handleStartPodcastBtnClick={handleStartPodcastBtnClick} />
         </div>
       ) : (
         <CompleteProfile
@@ -134,14 +103,14 @@ export const ProfilePage = () => {
           setBio={setBio}
           setUsername_={setUsername_}
           username_={username_}
-        ></CompleteProfile>
+        />
       )}
       {startPodcastBtn && (
         <CreatePodcastModal
           destroyCPModal={destroyCPModal}
           initiatePodcastCreation={initiatePodcastCreation}
           setPodcastTopic={setPodcastTopic}
-        ></CreatePodcastModal>
+        />
       )}
     </div>
   );
@@ -153,7 +122,6 @@ const CompleteProfile = ({ username_, setUsername_, bio, setBio }) => {
 
   const handleSubmit = async (ev) => {
     ev.preventDefault();
-
     if (username_ !== "" && bio !== "") {
       const response = await axios.post(
         `${
@@ -178,74 +146,83 @@ const CompleteProfile = ({ username_, setUsername_, bio, setBio }) => {
   };
 
   return (
-    <div id="CompleteProfile-Main">
-      <h2 id="Complete-Profile-Heading">
-        Hello {username} Finish Setting Up Your Profile...
+    <div className=" text-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
+      <h2 className="text-2xl font-semibold mb-4">
+        Hello {username}, Finish Setting Up Your Profile...
       </h2>
-      <div id="Background-CP">
-        <form
-          action=""
-          id="Complete-Profile-Form"
-          onSubmit={(ev) => handleSubmit(ev)}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <label htmlFor="username" className="block text-gray-300">
+            Username
+          </label>
+          <input
+            type="text"
+            id="username"
+            className="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white focus:outline-none focus:border-gray-500"
+            onChange={(ev) => setUsername_(ev.target.value)}
+            placeholder="Username..."
+          />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="bio" className="block text-gray-300">
+            Bio
+          </label>
+          <input
+            type="text"
+            id="bio"
+            className="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white focus:outline-none focus:border-gray-500"
+            onChange={(ev) => setBio(ev.target.value)}
+            placeholder="Bio..."
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-gray-600 hover:bg-gray-500 text-white font-semibold p-2 rounded"
         >
-          <h2 id="cp-form-heading">COMPLETE SETTING UP YOUR PROFILE</h2>
-          <div id="username-div" className="details-div">
-            <label htmlFor="username">USERNAME</label>
-            <input
-              type="text"
-              id="username"
-              onChange={(ev) => setUsername_(ev.target.value)}
-              placeholder="USERNAME..."
-            />
-          </div>
-          <div id="bio-div" className="details-div">
-            <label htmlFor="bio">BIO</label>
-            <input
-              type="text"
-              id="bio"
-              onChange={(ev) => setBio(ev.target.value)}
-              placeholder="BIO..."
-            />
-          </div>
-          <button type="submit" id="cp-btn">
-            SUBMIT
-          </button>
-        </form>
-      </div>
-      {alertMessage !== "" && <div id="Fields-Empty">Fields are Empty </div>}
+          Submit
+        </button>
+      </form>
+      {alertMessage && <p className="text-red-500 mt-2">{alertMessage}</p>}
     </div>
   );
 };
 
 const Profile = ({ handleStartPodcastBtnClick }) => {
   return (
-    <div id="Profile-Main">
-      <div id="Profile-Card-Div">
-        <div id="Profile-Card">
-          <div id="Profile-Pic-Div">
-            <img
-              src={window.sessionStorage.getItem("profilePic")}
-              alt="profilePic"
-              id="Profile-Pic"
-            />
-          </div>
-          <div id="Profile-Details">
-            <div id="Profile-Details-Div">
-              <div id="Name">{window.sessionStorage.getItem("name")}</div>
-              <div id="Email">{window.sessionStorage.getItem("email")}</div>
-              <div id="Bio">{window.sessionStorage.getItem("bio")}</div>
-            </div>
-          </div>
+    <div className="flex flex-col items-center space-y-6 justify-evenly">
+      {/* Profile Card */}
+
+      <div
+        id="Profile-Card"
+        className="flex items-center space-x-4 bg-slate-700 rounded-md p-2"
+      >
+        <img
+          src={window.sessionStorage.getItem("profilePic")}
+          alt="Profile"
+          className="w-20 h-20 rounded-full border-2 border-gray-600"
+        />
+        <div>
+          <h3 className="sm:text-xl text-lg font-semibold">
+            {window.sessionStorage.getItem("name")}
+          </h3>
+          <p className="text-gray-400 text-xs sm:text-lg">
+            {window.sessionStorage.getItem("email")}
+          </p>
+          <p className="text-gray-300 tracking-normal text-xs sm:text-lg">
+            {window.sessionStorage.getItem("bio")}
+          </p>
         </div>
       </div>
-      <div id="Rest-Profile-Page">
-        <h1 id="Start-Podcast-Heading">START A PODCAST</h1>
-        <button id="Start-Podcast-Btn" onClick={handleStartPodcastBtnClick}>
-          <MdPodcasts
-            style={{ fontSize: "4.5rem", color: "white" }}
-          ></MdPodcasts>
+
+      {/* Start a Podcast Section */}
+      <div id="Start-A-Podcast">
+        <h1 className="text-4xl sm:text-6xl font-semibold">Start a Podcast</h1>
+        <button
+          className="bg-red-600 hover:bg-red-500 p-4 rounded-full flex items-center justify-center text-4xl transition duration-200 ease-in-out"
+          onClick={handleStartPodcastBtnClick}
+        >
+          <MdPodcasts className="text-white" />
         </button>
-        <UploadWidget></UploadWidget>
       </div>
     </div>
   );
@@ -256,45 +233,37 @@ const CreatePodcastModal = ({
   initiatePodcastCreation,
   setPodcastTopic,
 }) => {
-  //render this only if the profile is complete and also the start button was clicked
-
- 
-
-  const handlePodcastCreation = (ev) => {
-    ev.preventDefault();
-    initiatePodcastCreation(ev);
-  };
-
   return (
-    <div id="CP-Modal-Main">
-      <button id="Close-CP-Modal" onClick={destroyCPModal}>
-        {" "}
-        <FaWindowClose
-          style={{
-            color: "white",
-            backgroundColor: "black",
-            borderRadius: "1.5rem",
-          }}
-        ></FaWindowClose>{" "}
-      </button>
-      <form
-        action=""
-        id="Create-Podcast-Topic"
-        onSubmit={(ev) => handlePodcastCreation(ev)}
-      >
-        <label htmlFor="Podcast-Topic" id="Podcast-Topic-Label">
-          Enter Podcast Topic
-        </label>
-        <input
-          type="text"
-          id="Podcast-Topic"
-          placeholder="TOPIC..."
-          onChange={(ev) => setPodcastTopic(ev.target.value)}
-        />
-        <button id="Topic-Submit-Btn" type="submit">
-          Create Podcast
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg text-white w-full max-w-lg space-y-4 relative">
+        <button
+          onClick={destroyCPModal}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-300"
+        >
+          <FaWindowClose className="text-2xl" />
         </button>
-      </form>
+        <form onSubmit={initiatePodcastCreation} className="space-y-4">
+          <label
+            htmlFor="Podcast-Topic"
+            className="block text-gray-300 font-semibold"
+          >
+            Enter Podcast Topic
+          </label>
+          <input
+            type="text"
+            id="Podcast-Topic"
+            className="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white focus:outline-none focus:border-gray-500"
+            placeholder="Topic..."
+            onChange={(ev) => setPodcastTopic(ev.target.value)}
+          />
+          <button
+            type="submit"
+            className="btn-primary"
+          >
+            Create Podcast
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

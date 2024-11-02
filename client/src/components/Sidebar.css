@@ -1,15 +1,12 @@
-#Sidebar-Main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-evenly;
-    background-color: #f5f5dc;
-    font-size: 1rem;
-    font-weight: bold;
-    letter-spacing: 0.125rem;
-    width: 10rem;
-    height: 100vh;
-    right: 0;
-    position: fixed;
+.linkStyle {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  color: white; /* Default color */
+  text-decoration: none; /* Optional */
+}
 
+.linkStyle:hover {
+  color: lightblue; /* Hover effect color */
 }

@@ -3,12 +3,9 @@ import { Sidebar } from "./components/Sidebar";
 import { AuthenticationPage } from "./pages/AuthenticationPage";
 import { HomePage } from "./pages/HomePage";
 import { FaHamburger } from "react-icons/fa";
-import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { ProfilePage } from "./pages/ProfilePage";
-import store from "./app/store";
-import { Provider } from "react-redux";
 import { Rooms } from "./pages/Rooms";
 import { Room } from "./pages/Room";
 import { SocketProvider } from "./context/socketContext";
@@ -50,7 +47,7 @@ function App() {
     <Router>
       <SocketProvider>
         <UsersInPodcastProvider>
-          <div id="App-Main">
+          <div id="App-Main" className="w-screen min-h-screen bg-black text-white flex flex-row-reverse  " >
             {!sidebar && (
               <GiHamburgerMenu
                 style={{

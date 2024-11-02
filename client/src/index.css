@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+
+  .btn-primary {
+    @apply rounded-md bg-red-800 hover:bg-red-700 flex flex-row justify-evenly items-center p-2 sm:p-4 text-white  transition-all ease-in border-none  focus:outline-none active:bg-red-400
+  }
+
+  .btn-secondary-1 {
+    @apply rounded-md bg-gray-950 hover:bg-gray-900 flex flex-row justify-evenly items-center p-2 sm:p-4 text-white hover:text-gray-700 transition-all ease-in border-none h-8 m-2
+  }
+
+  
+
+
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

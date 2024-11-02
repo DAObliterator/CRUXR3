@@ -1,49 +1,36 @@
 import React from "react";
-import "./AuthenticationPage.css";
 import { FaGoogle } from "react-icons/fa";
 import axios from "axios";
 
 export const AuthenticationPage = () => {
   return (
-    <div id="Authentication-Main">
-      <LoginComponent></LoginComponent>
+    <div
+      id="Authentication-Main"
+      className=" min-h-screen flex items-center justify-center w-screen"
+    >
+      <LoginComponent />
     </div>
   );
 };
 
 const LoginComponent = () => {
-  /*const handleSubmit = async (ev) => {
-    ev.preventDefault();
-    axios.get(
-      `${
-        import.meta.env.VITE_ENV === "development"
-          ? import.meta.env.VITE_API_DEV 
-          : import.meta.env.VITE_API_PROD 
-      }/auth/google`,
-      { withCredentials: true }
-    ).then((response) => {
-      console.log(response.data , "response.data from the /auth/google/callback endpoint")
-    }).catch((error) => {
-      console.log(`${error} --- error happened while sending post req to /auth/google/callback endpoint `)
-    })
-    
-  };*/
-
-
   return (
-    <div id="Login-Main">
-      <form action="" id="Login-Form">
-        <h2 id="Login-Heading">LOGIN</h2>
+    <div
+      id="Login-Main"
+      className="bg-gray-700 p-8 rounded-lg shadow-lg flex flex-col items-center w-80"
+    >
+      <form
+        id="Login-Form"
+        className="flex flex-col items-center w-full space-y-6"
+      >
+        <h2 id="Login-Heading" className="text-2xl text-white font-semibold">
+          LOGIN
+        </h2>
+
         <button
           id="Google-Btn"
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-evenly",
-            alignItems: "center",
-            backgroundColor: "red",
-          }}
-          type="submit"
+          className="btn-primary"
+          type="button"
         >
           <a
             href={
@@ -51,18 +38,11 @@ const LoginComponent = () => {
                 ? import.meta.env.VITE_API_DEV + "/auth/google"
                 : import.meta.env.VITE_API_PROD + "/auth/google"
             }
+            className="flex items-center space-x-2 text-white"
           >
-            Sign In With Google
+            <span>Sign In With Google</span>
+            <FaGoogle className="text-white text-lg" />
           </a>
-
-          <FaGoogle
-            style={{
-              fontSize: "1.5rem",
-              letterSpacing: "2px",
-              color: "white",
-              marginLeft: "2px",
-            }}
-          ></FaGoogle>
         </button>
       </form>
     </div>

@@ -1,7 +1,7 @@
 import React, { useEffect , useState } from 'react';
-import "./Sidebar.css";
 import { Link } from 'react-router-dom';
 import { IoMdClose } from "react-icons/io";
+import "./Sidebar.css"
 
 
 export const Sidebar = ({ destroySideBar }) => {
@@ -10,6 +10,7 @@ export const Sidebar = ({ destroySideBar }) => {
   const [ user , setUser ] = useState("");
   const [ yourRoomId , setYourRoomId ] = useState("");
 
+  
   useEffect(() => {
 
     if (window.sessionStorage.getItem("name")) {
@@ -39,16 +40,36 @@ export const Sidebar = ({ destroySideBar }) => {
   },[])
 
   return (
-    <div id="Sidebar-Main">
+    <div
+      id="Sidebar-Main"
+      className="min-h-screen flex flex-col justify-evenly items-center p-2 sm:p-4 md:p-6 w-1/4 sm:w-1/6 bg-gray-900 fixed"
+    >
       <IoMdClose
         onClick={destroySideBar}
-        style={{ color: "blue", fontSize: "3rem" }}
+        size={40}
+        color='white'
       ></IoMdClose>
-      <Link to="/">HOME</Link>
-      {!authenticated && <Link to="/authenticate">SIGN IN/UP </Link>}
-      {authenticated && <Link to={`/rooms/${yourRoomId}`}>YOUR-ROOM</Link>}
-      {authenticated && <Link to={`/profile/${user}`}>PROFILE</Link>}
-      {authenticated && <Link to={`/rooms`}>ROOMS</Link>}
+      <Link to="/" className='linkStyle' >HOME</Link>
+      {!authenticated && (
+        <Link className='linkStyle' to="/authenticate">
+          SIGN IN/UP{" "}
+        </Link>
+      )}
+      {authenticated && (
+        <Link className='linkStyle' to={`/rooms/${yourRoomId}`}>
+          YOUR-ROOM
+        </Link>
+      )}
+      {authenticated && (
+        <Link className='linkStyle' to={`/profile/${user}`}>
+          PROFILE
+        </Link>
+      )}
+      {authenticated && (
+        <Link className='linkStyle' to={`/rooms`}>
+          ROOMS
+        </Link>
+      )}
     </div>
   );
 }

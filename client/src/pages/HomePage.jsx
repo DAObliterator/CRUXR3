@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import "./HomePage.css";
 import { FaBeer, FaThLarge } from "react-icons/fa";
 import { IconContext } from "react-icons/lib";
 import { FaPodcast } from "react-icons/fa";
@@ -43,45 +42,35 @@ export const HomePage = () => {
   }, []);
 
   return (
-    <div id="HomePage-Main">
-      <div id="Intro">
-        <h1 id="App-Name">Sermo</h1>
+    <div
+      id="HomePage-Main"
+      className=" p-4  flex flex-col  min-h-screen justify-evenly "
+    >
+      <div
+        id="Intro"
+        className="text-3xl sm:text-4xl md:text-5xl justify-evenly  flex flex-col"
+      >
+        <h1 id="App-Name">
+          Sermo <FaPodcast size={75} color="red"></FaPodcast>
+        </h1>
         <p id="Description">
           An App To Create Podcasts and Connect with People
-          <FaPodcast
-            style={{
-              color: "whitesmoke",
-              fontSize: "10rem",
-              marginLeft: "2rem",
-            }}
-          ></FaPodcast>
         </p>
       </div>
       <div id="Login-Continue">
         {Object.keys(user).length === 0 ? (
           <div>
-            {" "}
             <strong>
-              {" "}
               <a href="/authenticate">LOGIN/SIGN UP</a>
-            </strong>{" "}
-            <p> to Continue </p>
-            <FaArrowAltCircleRight
-              style={{
-                color: "whitesmoke",
-                fontSize: "4rem",
-                marginLeft: "1rem",
-              }}
-            ></FaArrowAltCircleRight>{" "}
+            </strong>
           </div>
         ) : (
           <p href="/profile">
-            {" "}
             Hello {window.sessionStorage.getItem("name")} To Create Podcast,
-            Head to Your{" "}
+            Head to Your
             <a href={`profile/${window.sessionStorage.getItem("name")}`}>
               Profile
-            </a>{" "}
+            </a>
           </p>
         )}
       </div>
